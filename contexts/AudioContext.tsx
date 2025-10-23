@@ -143,7 +143,7 @@ export const [AudioProvider, useAudio] = createContextHook<AudioContextValue>(()
             await tryPlay(url);
           } catch (primaryErr) {
             console.warn('Primary playback failed, trying CORS proxy...', primaryErr);
-            const proxied = `https://cors.isomorphic-git.org/${url}`;
+            const proxied = `https://cors.isomorphic-git.org/${encodeURIComponent(url)}`;
             try {
               await tryPlay(proxied);
             } catch (proxyErr) {
