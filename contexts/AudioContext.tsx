@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Platform } from 'react-native';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Sound } from 'expo-av/build/Audio';
+import * as Tone from 'tone';
 
 interface AudioContextValue {
   isPlaying: boolean;
@@ -18,11 +19,38 @@ interface AudioContextValue {
   setTimer: (minutes: number | null) => void;
 }
 
-async function fetchAndConvertToBlob(url: string): Promise<string> {
-  const response = await fetch(url, { mode: 'cors', cache: 'force-cache' });
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const blob = await response.blob();
-  return URL.createObjectURL(blob);
+async function generateTone(frequency: number): Promise<string> {
+  await Tone.start();
+  const synth = new Tone.Oscillator(frequency, 'sine').toDestination();
+  const recorder = new Tone.Recorder();
+  synth.connect(recorder);
+  synth.start();
+  recorder.start();
+  
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  
+  const recording = await recorder.stop();
+  synth.stop();
+  synth.dispose();
+  
+  return URL.createObjectURL(recording);
+}
+
+async function generateWhiteNoise(): Promise<string> {
+  await Tone.start();
+  const noise = new Tone.Noise('white').toDestination();
+  const recorder = new Tone.Recorder();
+  noise.connect(recorder);
+  noise.start();
+  recorder.start();
+  
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  
+  const recording = await recorder.stop();
+  noise.stop();
+  noise.dispose();
+  
+  return URL.createObjectURL(recording);
 }
 
 export const [AudioProvider, useAudio] = createContextHook<AudioContextValue>(() => {
@@ -64,6 +92,9 @@ export const [AudioProvider, useAudio] = createContextHook<AudioContextValue>(()
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+      }
     };
   }, [sound]);
 
@@ -83,6 +114,7 @@ export const [AudioProvider, useAudio] = createContextHook<AudioContextValue>(()
     async (url: string, title: string) => {
       try {
         setIsLoading(true);
+        console.log('[Audio] Starting playback:', url);
 
         if (sound) {
           if (Platform.OS === 'web' && sound instanceof HTMLAudioElement) {
@@ -96,8 +128,6 @@ export const [AudioProvider, useAudio] = createContextHook<AudioContextValue>(()
             await sound.unloadAsync();
           }
         }
-
-        console.log('[Audio] Loading:', url);
 
         if (Platform.OS === 'web') {
           const audio = new window.Audio();
@@ -113,32 +143,49 @@ export const [AudioProvider, useAudio] = createContextHook<AudioContextValue>(()
             setPosition(audio.currentTime * 1000);
           });
 
-          audio.addEventListener('play', () => setIsPlaying(true));
-          audio.addEventListener('pause', () => setIsPlaying(false));
-          audio.addEventListener('error', () => {
-            console.error('[Audio] Playback error for:', url);
+          audio.addEventListener('play', () => {
+            console.log('[Audio] Playing');
+            setIsPlaying(true);
+          });
+          
+          audio.addEventListener('pause', () => {
+            console.log('[Audio] Paused');
+            setIsPlaying(false);
+          });
+          
+          audio.addEventListener('error', (e) => {
+            console.error('[Audio] Error event:', e);
           });
 
           let blobUrl: string | null = null;
-          try {
-            blobUrl = await fetchAndConvertToBlob(url);
+          
+          if (url.startsWith('generated:')) {
+            const type = url.split(':')[1];
+            console.log('[Audio] Generating sound:', type);
+            
+            if (type === 'whitenoise') {
+              blobUrl = await generateWhiteNoise();
+            } else {
+              const freq = parseInt(type, 10);
+              blobUrl = await generateTone(freq);
+            }
+            
             audio.src = blobUrl;
             await audio.play();
             blobUrlRef.current = blobUrl;
-            console.log('[Audio] Playing via blob');
-          } catch (err) {
-            console.warn('[Audio] Blob failed, trying CORS proxy:', err);
-            if (blobUrl) URL.revokeObjectURL(blobUrl);
+            console.log('[Audio] Generated sound playing');
+          } else {
             try {
-              const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-              blobUrl = await fetchAndConvertToBlob(proxyUrl);
+              const response = await fetch(url);
+              if (!response.ok) throw new Error('Fetch failed');
+              const blob = await response.blob();
+              blobUrl = URL.createObjectURL(blob);
               audio.src = blobUrl;
               await audio.play();
               blobUrlRef.current = blobUrl;
-              console.log('[Audio] Playing via proxy');
-            } catch (proxyErr) {
-              console.error('[Audio] All methods failed:', proxyErr);
-              if (blobUrl) URL.revokeObjectURL(blobUrl);
+              console.log('[Audio] External sound playing');
+            } catch (err) {
+              console.error('[Audio] Failed to load:', err);
               setIsLoading(false);
               return;
             }
@@ -164,6 +211,12 @@ export const [AudioProvider, useAudio] = createContextHook<AudioContextValue>(()
             }, timer * 60 * 1000);
           }
         } else {
+          if (url.startsWith('generated:')) {
+            console.log('[Audio] Generated sounds not supported on native');
+            setIsLoading(false);
+            return;
+          }
+          
           const { sound: newSound } = await Audio.Sound.createAsync(
             { uri: url },
             { shouldPlay: true, isLooping: true },
@@ -187,7 +240,7 @@ export const [AudioProvider, useAudio] = createContextHook<AudioContextValue>(()
           }
         }
       } catch (error) {
-        console.error('[Audio] Error:', error);
+        console.error('[Audio] Playback error:', error);
       } finally {
         setIsLoading(false);
       }

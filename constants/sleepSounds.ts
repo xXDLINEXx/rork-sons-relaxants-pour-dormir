@@ -14,17 +14,15 @@ export const sleepSounds: SleepSound[] = [
     description: 'Son apaisant de la pluie qui tombe',
     icon: 'cloud-rain',
     color: '#60A5FA',
-    audioUrl:
-      'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Field_Recording_Rain/Field_Recording_Rain_-_Rain_Forest.mp3',
+    audioUrl: 'https://cdn.freesound.org/previews/213/213655_2005451-lq.mp3',
   },
   {
     id: 'ocean',
-    title: "Vagues de l'océan",
+    title: 'Vagues de l océan',
     description: 'Bruit des vagues qui se brisent sur la plage',
     icon: 'waves',
     color: '#3B82F6',
-    audioUrl:
-      'https://cdn.pixabay.com/audio/2023/03/10/audio_16e4b6f4c3.mp3',
+    audioUrl: 'https://cdn.freesound.org/previews/252/252966_3263906-lq.mp3',
   },
   {
     id: 'forest',
@@ -32,8 +30,7 @@ export const sleepSounds: SleepSound[] = [
     description: 'Sons apaisants de la nature en forêt',
     icon: 'trees',
     color: '#10B981',
-    audioUrl:
-      'https://cdn.pixabay.com/audio/2023/05/09/audio_6f9e66aab0.mp3',
+    audioUrl: 'https://cdn.freesound.org/previews/416/416529_5121236-lq.mp3',
   },
   {
     id: 'wind',
@@ -41,35 +38,31 @@ export const sleepSounds: SleepSound[] = [
     description: 'Murmure doux du vent dans les arbres',
     icon: 'wind',
     color: '#8B5CF6',
-    audioUrl:
-      'https://cdn.pixabay.com/audio/2023/02/14/audio_f7cfb87e8c.mp3',
+    audioUrl: 'https://cdn.freesound.org/previews/254/254490_1329834-lq.mp3',
   },
   {
     id: 'fire',
     title: 'Feu de camp',
-    description: "Crépitement relaxant d'un feu de bois",
+    description: 'Crépitement relaxant d un feu de bois',
     icon: 'flame',
     color: '#F59E0B',
-    audioUrl:
-      'https://cdn.pixabay.com/audio/2023/03/13/audio_2f20e2f0da.mp3',
+    audioUrl: 'https://cdn.freesound.org/previews/235/235953_1015240-lq.mp3',
   },
   {
     id: 'river',
     title: 'Rivière calme',
-    description: 'Eau qui s’écoule paisiblement',
+    description: 'Eau qui s écoule paisiblement',
     icon: 'waves',
     color: '#06B6D4',
-    audioUrl:
-      'https://cdn.pixabay.com/audio/2023/02/20/audio_3a7e4b673f.mp3',
+    audioUrl: 'https://cdn.freesound.org/previews/171/171419_2437358-lq.mp3',
   },
   {
     id: 'night',
-    title: 'Nuit d’été',
+    title: 'Nuit d été',
     description: 'Ambiance nocturne avec grillons',
     icon: 'trees',
     color: '#0EA5E9',
-    audioUrl:
-      'https://cdn.pixabay.com/audio/2023/03/19/audio_c3a23f238f.mp3',
+    audioUrl: 'https://cdn.freesound.org/previews/397/397565_2266186-lq.mp3',
   },
   {
     id: 'thunder',
@@ -77,8 +70,7 @@ export const sleepSounds: SleepSound[] = [
     description: 'Tonnerre lointain et pluie douce',
     icon: 'cloud-rain',
     color: '#64748B',
-    audioUrl:
-      'https://cdn.pixabay.com/audio/2023/03/01/audio_76df6b5f1e.mp3',
+    audioUrl: 'https://cdn.freesound.org/previews/331/331381_3932496-lq.mp3',
   },
   {
     id: 'whitenoise',
@@ -86,6 +78,6 @@ export const sleepSounds: SleepSound[] = [
     description: 'Son constant pour masquer les bruits ambiants',
     icon: 'radio',
     color: '#6B7280',
-    audioUrl: 'https://cdn.pixabay.com/audio/2023/10/30/audio_efa46c6e98.mp3',
+    audioUrl: 'generated:whitenoise',
   },
 ];
