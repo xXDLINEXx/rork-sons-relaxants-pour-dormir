@@ -247,25 +247,28 @@ export default function PlayerScreen() {
         </View>
 
         <View style={[styles.controls, { paddingBottom: insets.bottom + 24 }]}>
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={handlePlayPause}
-            testID="play-pause-button"
-          >
-            {audio.isPlaying ? (
-              <Pause size={48} color="#FFFFFF" fill="#FFFFFF" />
-            ) : (
-              <Play size={48} color="#FFFFFF" fill="#FFFFFF" />
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={handleBack}
-            testID="stop-button"
-          >
-            <X size={28} color="#FFFFFF" strokeWidth={2} />
-          </TouchableOpacity>
+          <View style={styles.controlsRow}>
+            <TouchableOpacity
+              style={styles.controlButton}
+              onPress={handlePlayPause}
+              testID="play-pause-button"
+            >
+              {audio.isPlaying ? (
+                <Pause size={48} color="#FFFFFF" fill="#FFFFFF" />
+              ) : (
+                <Play size={48} color="#FFFFFF" fill="#FFFFFF" />
+              )}
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.stopButton}
+              onPress={handleBack}
+              testID="stop-button"
+            >
+              <X size={32} color="#FFFFFF" strokeWidth={2.5} />
+              <Text style={styles.stopButtonText}>Stop</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {audio.timer && (
@@ -627,6 +630,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     gap: 20,
   },
+  controlsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+  },
   controlButton: {
     width: 88,
     height: 88,
@@ -637,13 +645,22 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: 'rgba(255, 255, 255, 0.4)',
   },
-  secondaryButton: {
-    width: 56,
-    height: 56,
+  stopButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     borderRadius: 28,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(239, 68, 68, 0.3)',
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    borderWidth: 2,
+    borderColor: 'rgba(239, 68, 68, 0.5)',
+  },
+  stopButtonText: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    color: '#FFFFFF',
   },
   timerIndicator: {
     position: 'absolute',
