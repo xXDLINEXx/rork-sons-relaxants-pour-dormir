@@ -154,7 +154,16 @@ export const [AudioProvider, useAudio] = createContextHook<AudioContextValue>(()
           });
           
           audio.addEventListener('error', (e) => {
-            console.error('[Audio] Error event:', e);
+            const target = e.target as HTMLAudioElement;
+            const errorCode = target.error?.code;
+            const errorMessage = target.error?.message || 'Unknown error';
+            console.error('[Audio] Error loading audio:', {
+              code: errorCode,
+              message: errorMessage,
+              src: target.src
+            });
+            setIsLoading(false);
+            setIsPlaying(false);
           });
 
           let blobUrl: string | null = null;
@@ -163,27 +172,49 @@ export const [AudioProvider, useAudio] = createContextHook<AudioContextValue>(()
             const type = url.split(':')[1];
             console.log('[Audio] Generating sound:', type);
             
-            if (type === 'whitenoise') {
-              blobUrl = await generateWhiteNoise();
-            } else {
-              const freq = parseInt(type, 10);
-              blobUrl = await generateTone(freq);
-            }
-            
-            audio.src = blobUrl;
-            await audio.play();
-            blobUrlRef.current = blobUrl;
-            console.log('[Audio] Generated sound playing');
-          } else {
             try {
-              const response = await fetch(url);
-              if (!response.ok) throw new Error('Fetch failed');
-              const blob = await response.blob();
-              blobUrl = URL.createObjectURL(blob);
+              if (type === 'whitenoise') {
+                blobUrl = await generateWhiteNoise();
+              } else {
+                const freq = parseInt(type, 10);
+                blobUrl = await generateTone(freq);
+              }
+              
               audio.src = blobUrl;
               await audio.play();
               blobUrlRef.current = blobUrl;
-              console.log('[Audio] External sound playing');
+              console.log('[Audio] Generated sound playing');
+            } catch (err) {
+              console.error('[Audio] Generation failed:', err);
+              setIsLoading(false);
+              return;
+            }
+          } else {
+            try {
+              console.log('[Audio] Fetching:', url);
+              const response = await fetch(url, { mode: 'cors' });
+              if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+              }
+              const blob = await response.blob();
+              console.log('[Audio] Blob type:', blob.type, 'size:', blob.size);
+              
+              if (blob.size === 0) {
+                throw new Error('Empty audio file');
+              }
+              
+              blobUrl = URL.createObjectURL(blob);
+              audio.src = blobUrl;
+              
+              await new Promise((resolve, reject) => {
+                audio.oncanplaythrough = resolve;
+                audio.onerror = reject;
+                setTimeout(() => reject(new Error('Load timeout')), 10000);
+              });
+              
+              await audio.play();
+              blobUrlRef.current = blobUrl;
+              console.log('[Audio] Playing successfully');
             } catch (err) {
               console.error('[Audio] Failed to load:', err);
               setIsLoading(false);
