@@ -27,7 +27,7 @@ async function generateTone(frequency: number): Promise<string> {
   synth.start();
   recorder.start();
   
-  await new Promise(resolve => setTimeout(resolve, 5000));
+  await new Promise(resolve => setTimeout(resolve, 60000));
   
   const recording = await recorder.stop();
   synth.stop();
@@ -44,7 +44,7 @@ async function generateWhiteNoise(): Promise<string> {
   noise.start();
   recorder.start();
   
-  await new Promise(resolve => setTimeout(resolve, 5000));
+  await new Promise(resolve => setTimeout(resolve, 60000));
   
   const recording = await recorder.stop();
   noise.stop();
@@ -242,32 +242,34 @@ export const [AudioProvider, useAudio] = createContextHook<AudioContextValue>(()
             }, timer * 60 * 1000);
           }
         } else {
-          if (url.startsWith('generated:')) {
-            console.log('[Audio] Generated sounds not supported on native');
+          console.log('[Audio] Loading on native:', url);
+          
+          try {
+            const { sound: newSound } = await Audio.Sound.createAsync(
+              { uri: url },
+              { shouldPlay: true, isLooping: true },
+              onPlaybackStatusUpdate
+            );
+
+            setSound(newSound);
+            setCurrentTrack(url);
+            setCurrentTitle(title);
+            setIsPlaying(true);
+
+            if (timer) {
+              if (timerRef.current) clearTimeout(timerRef.current);
+              timerRef.current = setTimeout(async () => {
+                await newSound.stopAsync();
+                await newSound.unloadAsync();
+                setIsPlaying(false);
+                setCurrentTrack(null);
+                setCurrentTitle(null);
+              }, timer * 60 * 1000);
+            }
+          } catch (err) {
+            console.error('[Audio] Native playback error:', err);
             setIsLoading(false);
             return;
-          }
-          
-          const { sound: newSound } = await Audio.Sound.createAsync(
-            { uri: url },
-            { shouldPlay: true, isLooping: true },
-            onPlaybackStatusUpdate
-          );
-
-          setSound(newSound);
-          setCurrentTrack(url);
-          setCurrentTitle(title);
-          setIsPlaying(true);
-
-          if (timer) {
-            if (timerRef.current) clearTimeout(timerRef.current);
-            timerRef.current = setTimeout(async () => {
-              await newSound.stopAsync();
-              await newSound.unloadAsync();
-              setIsPlaying(false);
-              setCurrentTrack(null);
-              setCurrentTitle(null);
-            }, timer * 60 * 1000);
           }
         }
       } catch (error) {
