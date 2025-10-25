@@ -167,24 +167,20 @@ export const [AudioProvider, useAudio] = createContextHook<AudioContextValue>(()
                   errorMessage = 'MEDIA_ERR_ABORTED: The fetching process was aborted by the user';
                   break;
                 case 2:
-                  errorMessage = 'MEDIA_ERR_NETWORK: A network error occurred';
+                  errorMessage = 'MEDIA_ERR_NETWORK: A network error occurred (likely CORS or network issue)';
                   break;
                 case 3:
                   errorMessage = 'MEDIA_ERR_DECODE: Error occurred while decoding the media';
                   break;
                 case 4:
-                  errorMessage = 'MEDIA_ERR_SRC_NOT_SUPPORTED: Media format not supported';
+                  errorMessage = 'MEDIA_ERR_SRC_NOT_SUPPORTED: Media format not supported or blocked by CORS';
                   break;
                 default:
                   errorMessage = target.error.message || 'Unknown media error';
               }
             }
             
-            console.error('[Audio] Error loading audio:', {
-              code: errorCode,
-              message: errorMessage,
-              src: target.src
-            });
+            console.error('[Audio] Error loading audio:', errorCode, errorMessage, 'URL:', target.src);
             setIsLoading(false);
             setIsPlaying(false);
           });
@@ -217,16 +213,47 @@ export const [AudioProvider, useAudio] = createContextHook<AudioContextValue>(()
             try {
               console.log('[Audio] Loading via HTMLAudioElement:', url);
               audio.src = url;
+              
               await new Promise((resolve, reject) => {
-                audio.oncanplaythrough = resolve as any;
-                audio.onerror = reject as any;
-                setTimeout(() => reject(new Error('Load timeout')), 15000);
+                const handleCanPlay = () => {
+                  audio.removeEventListener('canplaythrough', handleCanPlay);
+                  audio.removeEventListener('error', handleError);
+                  resolve(undefined);
+                };
+                
+                const handleError = (e: Event) => {
+                  audio.removeEventListener('canplaythrough', handleCanPlay);
+                  audio.removeEventListener('error', handleError);
+                  const target = e.target as HTMLAudioElement;
+                  const error = target.error;
+                  let errorMsg = 'Unknown load error';
+                  if (error) {
+                    errorMsg = `Media Error (Code ${error.code}): `;
+                    switch (error.code) {
+                      case 1: errorMsg += 'Aborted'; break;
+                      case 2: errorMsg += 'Network error (check CORS)'; break;
+                      case 3: errorMsg += 'Decode error'; break;
+                      case 4: errorMsg += 'Source not supported (CORS or format)'; break;
+                    }
+                  }
+                  reject(new Error(errorMsg));
+                };
+                
+                audio.addEventListener('canplaythrough', handleCanPlay);
+                audio.addEventListener('error', handleError);
+                
+                setTimeout(() => {
+                  audio.removeEventListener('canplaythrough', handleCanPlay);
+                  audio.removeEventListener('error', handleError);
+                  reject(new Error('Load timeout after 15s'));
+                }, 15000);
               });
+              
               await audio.play();
               console.log('[Audio] Playing successfully');
             } catch (err) {
               const errorMessage = err instanceof Error ? err.message : String(err);
-              console.error('[Audio] Failed to load direct src:', errorMessage, err);
+              console.error('[Audio] Failed to load direct src:', errorMessage);
               setIsLoading(false);
               return;
             }
