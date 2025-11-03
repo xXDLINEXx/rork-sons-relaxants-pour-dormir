@@ -57,14 +57,6 @@ export const sleepSounds: SleepSound[] = [
     audioUrl: 'https://cdn.pixabay.com/audio/2024/01/30/audio_bba788e9f2.mp3',
   },
   {
-    id: 'night',
-    title: 'Nuit d été',
-    description: 'Ambiance nocturne avec grillons',
-    icon: 'trees',
-    color: '#0EA5E9',
-    audioUrl: 'https://cdn.pixabay.com/audio/2022/03/15/audio_1714f0852e.mp3',
-  },
-  {
     id: 'thunder',
     title: 'Orage apaisant',
     description: 'Tonnerre lointain et pluie douce',
