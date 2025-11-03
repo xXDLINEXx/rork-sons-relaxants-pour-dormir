@@ -68,6 +68,11 @@ export default function HomeScreen() {
   const audio = useAudio();
   const [showTimerModal, setShowTimerModal] = useState(false);
 
+  const handleOpenCDNPlayer = () => {
+    console.log('[UI] Opening CDN player');
+    router.push('/cdn-player');
+  };
+
   const handlePlaySound = (id: string, type: 'sound' | 'frequency') => {
     console.log('[UI] Opening player', { id, type });
     router.push(`/player?id=${id}&type=${type}`);
@@ -78,8 +83,17 @@ export default function HomeScreen() {
       <StatusBar barStyle="light-content" />
       <View style={[styles.backgroundContainer, { backgroundColor: '#0A0A0F' }]}>
         <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-          <Text style={styles.headerTitle}>Serenity</Text>
-          <Text style={styles.headerSubtitle}>Peaceful audio for better sleep</Text>
+          <View>
+            <Text style={styles.headerTitle}>Serenity</Text>
+            <Text style={styles.headerSubtitle}>Peaceful audio for better sleep</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.cdnButton}
+            onPress={handleOpenCDNPlayer}
+            testID="cdn-button"
+          >
+            <Text style={styles.cdnButtonText}>CDN</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.tabContainer} testID="tabs">
@@ -312,8 +326,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 20,
+  },
+  cdnButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderWidth: 1,
+    borderColor: '#8B5CF6',
+  },
+  cdnButtonText: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#8B5CF6',
   },
   headerTitle: {
     fontSize: 34,

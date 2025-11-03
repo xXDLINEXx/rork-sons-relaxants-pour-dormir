@@ -15,6 +15,7 @@ function RootLayoutNav() {
     <Stack screenOptions={{ headerBackTitle: "Back" }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="player" options={{ headerShown: false, presentation: "modal" }} />
+      <Stack.Screen name="cdn-player" options={{ headerShown: false, presentation: "modal" }} />
     </Stack>
   );
 }
