@@ -31,15 +31,15 @@ serenity/
 export const soundsConfig = [
   {
     title: "Pluie douce",
-    audio: "https://raw.githubusercontent.com/xXDLINEXx/serenity/main/media/audio/pluie-douce.mp3",
-    video: "https://raw.githubusercontent.com/xXDLINEXx/serenity/main/media/video/pluie-douce.mp4",
+    audio: "https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/audio/pluie-douce.mp3",
+    video: "https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/video/pluie-douce.mp4",
     description: "Son relaxant de pluie",
     frequency: null,
   },
   {
     title: "Vent léger",
-    audio: "https://raw.githubusercontent.com/xXDLINEXx/serenity/main/media/audio/vent-leger.mp3",
-    video: "https://raw.githubusercontent.com/xXDLINEXx/serenity/main/media/video/vent-leger.mp4",
+    audio: "https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/audio/vent-leger.mp3",
+    video: "https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/video/vent-leger.mp4",
     description: "Brise douce et apaisante",
     frequency: null,
   },
@@ -47,7 +47,7 @@ export const soundsConfig = [
     title: "528 Hz - Fréquence de l'amour",
     audio: null,
     video: null,
-    frequency: "https://raw.githubusercontent.com/xXDLINEXx/serenity/main/media/frequency/528hz.mp3",
+    frequency: "https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/frequency/528hz.mp3",
     description: "Fréquence de guérison",
     benefits: "Réparation ADN, transformation, amour",
   },
@@ -115,7 +115,7 @@ interface SoundConfig {
 2. Mettez à jour `soundsConfig.ts` avec les nouvelles URLs
 3. Les URLs utilisent ce format :
    ```
-   https://raw.githubusercontent.com/xXDLINEXx/serenity/main/media/[type]/[filename]
+   https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/[type]/[filename]
    ```
 
 ## 🎨 Fonctionnalités
