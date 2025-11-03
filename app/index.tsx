@@ -79,7 +79,7 @@ export default function HomeScreen() {
       <StatusBar barStyle="light-content" />
       <View style={[styles.backgroundContainer, { backgroundColor: '#0A0A0F' }]}>
         <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-          <Text style={styles.headerTitle}>Sleep Sounds</Text>
+          <Text style={styles.headerTitle}>Serenity</Text>
           <Text style={styles.headerSubtitle}>Peaceful audio for better sleep</Text>
         </View>
 
@@ -267,7 +267,7 @@ function FrequencyCard({
     '285': 'https://images.unsplash.com/photo-1464802686167-b939a6910659?w=800&q=80',
     '396': 'https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?w=800&q=80',
     '417': 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800&q=80',
-    '528': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80',
+    '528': 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=800&q=80',
     '639': 'https://images.unsplash.com/photo-1444080748397-f442aa95c3e5?w=800&q=80',
     '741': 'https://images.unsplash.com/photo-1511884642898-4c92249e20b6?w=800&q=80',
     '852': 'https://images.unsplash.com/photo-1520034475321-cbe63696469a?w=800&q=80',
