@@ -27,7 +27,7 @@ export function SoundPlayer({ sound, onClose }: SoundPlayerProps) {
   const videoRef = useRef<any>(null);
 
   // Local asset loading with require
-  const audioSource = sound.audio ? require(sound.audio) : sound.frequency ? require(sound.frequency) : null;
+  const audioSource = sound.audio ? require(sound.audio) : null;
   const videoSource = sound.video ? require(sound.video) : null;
 
   useEffect(() => {
@@ -56,10 +56,8 @@ export function SoundPlayer({ sound, onClose }: SoundPlayerProps) {
       if (audioSound) {
         await audioSound.unloadAsync();
       }
-      if (videoRef.current) {
-        if (videoRef.current.stopAsync) {
-          await videoRef.current.stopAsync();
-        }
+      if (videoRef.current?.stopAsync) {
+        await videoRef.current.stopAsync();
       }
     } catch (error) {
       console.error('[SoundPlayer] Cleanup error:', error);
@@ -176,7 +174,7 @@ export function SoundPlayer({ sound, onClose }: SoundPlayerProps) {
           <View style={styles.placeholder} />
         </View>
 
-        {/* Artwork or video */}
+        {/* Video or fallback */}
         {videoSource ? (
           <Video
             ref={videoRef}
@@ -192,7 +190,7 @@ export function SoundPlayer({ sound, onClose }: SoundPlayerProps) {
           </View>
         )}
 
-        {/* Content */}
+        {/* Main content */}
         <View style={styles.content}>
           <Text style={styles.title}>{sound.title}</Text>
 
@@ -204,7 +202,7 @@ export function SoundPlayer({ sound, onClose }: SoundPlayerProps) {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.playButton} onPress={handlePlayPause}>
-              <Ionicons name={isPlaying ? "pause" : "play"} size={48} color="#FFFFFF" />
+              <Ionicons name={isPlaying ? 'pause' : 'play'} size={48} color="#FFFFFF" />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.secondaryButton} onPress={handleStop}>
@@ -214,7 +212,11 @@ export function SoundPlayer({ sound, onClose }: SoundPlayerProps) {
 
           <View style={styles.volumeControls}>
             <TouchableOpacity onPress={handleMuteToggle} style={styles.muteButton}>
-              <Ionicons name={isMuted ? "volume-mute" : "volume-high"} size={24} color="#FFFFFF" />
+              <Ionicons
+                name={isMuted ? 'volume-mute' : 'volume-high'}
+                size={24}
+                color="#FFFFFF"
+              />
             </TouchableOpacity>
 
             <View style={styles.volumeSliderContainer}>
@@ -299,4 +301,12 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: 'rgba(255,255,255,0.2)',
   },
-  volumeDotAct
+  volumeDotActive: {
+    flex: 1,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+  },
+});
+
+export default SoundPlayer;
