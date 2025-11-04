@@ -88,18 +88,18 @@ export default function HomeScreen() {
           </View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <TouchableOpacity
+              style={styles.localButton}
+              onPress={() => router.push('/local-player')}
+              testID="local-button"
+            >
+              <Text style={styles.localButtonText}>LOCAL</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               style={styles.cdnButton}
               onPress={handleOpenCDNPlayer}
               testID="cdn-button"
             >
               <Text style={styles.cdnButtonText}>CDN</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.debugButton}
-              onPress={() => router.push('/debug-json')}
-              testID="debug-button"
-            >
-              <Text style={styles.debugButtonText}>DEBUG</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -339,6 +339,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 20,
+  },
+  localButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+    borderWidth: 1,
+    borderColor: '#22C55E',
+  },
+  localButtonText: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#22C55E',
   },
   cdnButton: {
     paddingHorizontal: 20,

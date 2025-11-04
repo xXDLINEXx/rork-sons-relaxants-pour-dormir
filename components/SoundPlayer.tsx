@@ -34,10 +34,9 @@ export function SoundPlayer({ sound, onClose }: SoundPlayerProps) {
     console.log('[SoundPlayer] Mounting with sound:', sound.title);
     setupAudio();
     
-    const videoSource = sound.video || (sound.frequency ? sound.video : null);
-    if (videoSource) {
-      console.log('[SoundPlayer] Loading video from:', videoSource);
-      setVideoUrl(videoSource);
+    if (sound.video) {
+      console.log('[SoundPlayer] Loading local video asset');
+      setVideoUrl(sound.video.toString());
     }
     
     return () => {
@@ -56,7 +55,7 @@ export function SoundPlayer({ sound, onClose }: SoundPlayerProps) {
       };
       performCleanup();
     };
-  }, [audioSound, player, sound.title, sound.video, sound.frequency]);
+  }, [audioSound, player, sound.title, sound.video]);
 
   const setupAudio = async () => {
     try {
@@ -93,16 +92,16 @@ export function SoundPlayer({ sound, onClose }: SoundPlayerProps) {
     try {
       await cleanup();
 
-      const audioUrl = sound.audio || sound.frequency;
+      const audioAsset = sound.audio;
       
-      if (!audioUrl) {
-        throw new Error('Aucune URL audio disponible');
+      if (!audioAsset) {
+        throw new Error('Aucun asset audio disponible');
       }
 
-      console.log('[SoundPlayer] Loading audio from:', audioUrl);
+      console.log('[SoundPlayer] Loading local audio asset:', audioAsset);
       
       const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: audioUrl },
+        audioAsset,
         { 
           shouldPlay: true, 
           isLooping: true, 
