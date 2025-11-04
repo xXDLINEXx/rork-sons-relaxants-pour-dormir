@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { Audio, AVPlaybackStatus } from 'expo-av';
+import { Audio, AVPlaybackStatus, Video, ResizeMode } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Play, Pause, X, Volume2, VolumeX, SkipBack } from 'lucide-react-native';
 import { SoundConfig } from '@/types/soundsConfig';
@@ -26,33 +26,21 @@ export function SoundPlayer({ sound, onClose }: SoundPlayerProps) {
   const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<any>(null);
 
+  // Local asset loading with require
+  const audioSource = sound.audio ? require(sound.audio) : null;
+  const videoSource = sound.video ? require(sound.video) : null;
+
   useEffect(() => {
-    console.log('[SoundPlayer] Mounting with sound:', sound.title);
     setupAudio();
-    
+    loadAndPlay();
+
     return () => {
-      console.log('[SoundPlayer] Unmounting, cleaning up');
-      const performCleanup = async () => {
-        try {
-          if (audioSound) {
-            await audioSound.unloadAsync();
-          }
-          if (videoRef.current && Platform.OS !== 'web') {
-            if (videoRef.current.stopAsync) {
-              await videoRef.current.stopAsync();
-            }
-          }
-        } catch (error) {
-          console.error('[SoundPlayer] Cleanup error:', error);
-        }
-      };
-      performCleanup();
+      cleanup();
     };
-  }, [sound, audioSound]);
+  }, [sound]);
 
   const setupAudio = async () => {
     try {
-      console.log('[SoundPlayer] Setting up audio mode');
       await Audio.setAudioModeAsync({
         playsInSilentModeIOS: true,
         staysActiveInBackground: true,
@@ -66,56 +54,40 @@ export function SoundPlayer({ sound, onClose }: SoundPlayerProps) {
   const cleanup = async () => {
     try {
       if (audioSound) {
-        console.log('[SoundPlayer] Unloading audio');
         await audioSound.unloadAsync();
       }
-      if (videoRef.current && Platform.OS !== 'web') {
-        console.log('[SoundPlayer] Stopping video');
+      if (videoRef.current) {
         if (videoRef.current.stopAsync) {
           await videoRef.current.stopAsync();
         }
       }
     } catch (error) {
-      console.error('[SoundPlayer] Error during cleanup:', error);
+      console.error('[SoundPlayer] Cleanup error:', error);
     }
   };
 
   const loadAndPlay = async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      await cleanup();
+      if (!audioSource) throw new Error('Aucun fichier audio trouvé !');
 
-      const audioUrl = sound.audio || sound.frequency;
-      
-      if (!audioUrl) {
-        throw new Error('Aucune URL audio disponible');
-      }
-
-      console.log('[SoundPlayer] Loading audio from:', audioUrl);
-      
       const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: audioUrl },
-        { 
-          shouldPlay: true, 
-          isLooping: true, 
-          volume: isMuted ? 0 : volume 
+        audioSource,
+        {
+          shouldPlay: true,
+          isLooping: true,
+          volume: isMuted ? 0 : volume,
         },
         onPlaybackStatusUpdate
       );
-      
+
       setAudioSound(newSound);
       setIsPlaying(true);
-      console.log('[SoundPlayer] Audio loaded and playing');
-
-      if (sound.video || sound.frequency) {
-        console.log('[SoundPlayer] Video URL available');
-      }
-
     } catch (error) {
       console.error('[SoundPlayer] Error loading audio:', error);
-      setError('Impossible de charger le son');
+      setError('Impossible de charger le son en local');
     } finally {
       setIsLoading(false);
     }
@@ -127,178 +99,34 @@ export function SoundPlayer({ sound, onClose }: SoundPlayerProps) {
     }
   };
 
-  const handlePlayPause = async () => {
-    if (!audioSound) {
-      await loadAndPlay();
-      return;
-    }
-
-    try {
-      if (isPlaying) {
-        console.log('[SoundPlayer] Pausing');
-        await audioSound.pauseAsync();
-      } else {
-        console.log('[SoundPlayer] Resuming');
-        await audioSound.playAsync();
-      }
-    } catch (error) {
-      console.error('[SoundPlayer] Error toggling playback:', error);
-      setError('Erreur de lecture');
-    }
-  };
-
-  const handleStop = async () => {
-    try {
-      if (audioSound) {
-        console.log('[SoundPlayer] Stopping');
-        await audioSound.stopAsync();
-        setIsPlaying(false);
-      }
-    } catch (error) {
-      console.error('[SoundPlayer] Error stopping:', error);
-    }
-  };
-
-  const handleRestart = async () => {
-    try {
-      if (audioSound) {
-        console.log('[SoundPlayer] Restarting');
-        await audioSound.setPositionAsync(0);
-        await audioSound.playAsync();
-      } else {
-        await loadAndPlay();
-      }
-    } catch (error) {
-      console.error('[SoundPlayer] Error restarting:', error);
-    }
-  };
-
-  const handleVolumeChange = async (newVolume: number) => {
-    setVolume(newVolume);
-    if (audioSound && !isMuted) {
-      try {
-        await audioSound.setVolumeAsync(newVolume);
-      } catch (error) {
-        console.error('[SoundPlayer] Error setting volume:', error);
-      }
-    }
-  };
-
-  const handleMuteToggle = async () => {
-    const newMuted = !isMuted;
-    setIsMuted(newMuted);
-    if (audioSound) {
-      try {
-        await audioSound.setVolumeAsync(newMuted ? 0 : volume);
-      } catch (error) {
-        console.error('[SoundPlayer] Error toggling mute:', error);
-      }
-    }
-  };
-
-  const handleClose = async () => {
-    await cleanup();
-    onClose();
-  };
-
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#1E1B4B', '#312E81', '#4C1D95']}
-        style={styles.gradient}
-      >
+      <LinearGradient colors={['#1E1B4B', '#312E81', '#4C1D95']} style={styles.gradient}>
+        {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <X size={28} color="#FFFFFF" strokeWidth={2.5} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Lecture</Text>
           <View style={styles.placeholder} />
         </View>
 
+        {/* Content */}
         <View style={styles.content}>
-          <View style={styles.infoContainer}>
-            <Text style={styles.title}>{sound.title}</Text>
-            {sound.description && (
-              <Text style={styles.description}>{sound.description}</Text>
-            )}
-            {sound.benefits && (
-              <Text style={styles.benefits}>{sound.benefits}</Text>
-            )}
-            {sound.frequency && (
-              <View style={styles.frequencyBadge}>
-                <Text style={styles.frequencyText}>{sound.frequency}</Text>
-              </View>
-            )}
-          </View>
+          <Text style={styles.title}>{sound.title}</Text>
 
-          {error && (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
+          {videoSource ? (
+            <Video
+              ref={videoRef}
+              source={videoSource}
+              style={styles.video}
+              resizeMode={ResizeMode.COVER}
+              shouldPlay
+              isLooping
+            />
+          ) : (
+            <Text style={styles.noVideo}>🎧 Aucun visuel pour ce son</Text>
           )}
-
-          <View style={styles.controls}>
-            <View style={styles.mainControls}>
-              <TouchableOpacity
-                style={styles.secondaryButton}
-                onPress={handleRestart}
-                disabled={isLoading}
-              >
-                <SkipBack size={32} color="#FFFFFF" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.playButton, isLoading && styles.playButtonDisabled]}
-                onPress={handlePlayPause}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <ActivityIndicator size="large" color="#FFFFFF" />
-                ) : isPlaying ? (
-                  <Pause size={48} color="#FFFFFF" fill="#FFFFFF" />
-                ) : (
-                  <Play size={48} color="#FFFFFF" fill="#FFFFFF" />
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.secondaryButton}
-                onPress={handleStop}
-                disabled={isLoading}
-              >
-                <X size={32} color="#FFFFFF" strokeWidth={2.5} />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.volumeControls}>
-              <TouchableOpacity onPress={handleMuteToggle} style={styles.muteButton}>
-                {isMuted ? (
-                  <VolumeX size={24} color="#FFFFFF" />
-                ) : (
-                  <Volume2 size={24} color="#FFFFFF" />
-                )}
-              </TouchableOpacity>
-              
-              <View style={styles.volumeSliderContainer}>
-                {[0.2, 0.4, 0.6, 0.8, 1.0].map((vol) => (
-                  <TouchableOpacity
-                    key={vol}
-                    style={[
-                      styles.volumeDot,
-                      volume >= vol && !isMuted && styles.volumeDotActive,
-                    ]}
-                    onPress={() => handleVolumeChange(vol)}
-                  />
-                ))}
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.statusContainer}>
-            <Text style={styles.statusText}>
-              {isPlaying ? '▶ Lecture en boucle' : isLoading ? 'Chargement...' : '⏸ En pause'}
-            </Text>
-          </View>
         </View>
       </LinearGradient>
     </View>
@@ -306,157 +134,14 @@ export function SoundPlayer({ sound, onClose }: SoundPlayerProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1E1B4B',
-  },
-  gradient: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-  },
-  closeButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700' as const,
-    color: '#FFFFFF',
-  },
-  placeholder: {
-    width: 44,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'space-between',
-    paddingHorizontal: 32,
-    paddingBottom: 60,
-  },
-  infoContainer: {
-    alignItems: 'center',
-    marginTop: 40,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700' as const,
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  description: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 12,
-  },
-  benefits: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
-    textAlign: 'center',
-    lineHeight: 20,
-    fontStyle: 'italic' as const,
-  },
-  frequencyBadge: {
-    marginTop: 20,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  frequencyText: {
-    fontSize: 20,
-    fontWeight: '700' as const,
-    color: '#FFFFFF',
-  },
-  errorContainer: {
-    backgroundColor: 'rgba(239, 68, 68, 0.2)',
-    padding: 16,
-    borderRadius: 12,
-    marginVertical: 16,
-  },
-  errorText: {
-    fontSize: 14,
-    color: '#FCA5A5',
-    textAlign: 'center',
-  },
-  controls: {
-    alignItems: 'center',
-    gap: 32,
-  },
-  mainControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 24,
-  },
-  playButton: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
-  },
-  playButtonDisabled: {
-    opacity: 0.5,
-  },
-  secondaryButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  volumeControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    width: '100%',
-  },
-  muteButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  volumeSliderContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  volumeDot: {
-    flex: 1,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  volumeDotActive: {
-    backgroundColor: '#FFFFFF',
-  },
-  statusContainer: {
-    alignItems: 'center',
-    paddingTop: 24,
-  },
-  statusText: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontWeight: '600' as const,
-  },
+  container: { flex: 1, backgroundColor: '#1E1B4B' },
+  gradient: { flex: 1 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', paddingTop: 60, paddingBottom: 20, paddingHorizontal: 20 },
+  closeButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: '#FFFFFF' },
+  placeholder: { width: 44 },
+  content: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 24, color: 'white', marginBottom: 16 },
+  video: { width: '100%', height: 300 },
+  noVideo: { color: 'white', fontSize: 16, marginVertical: 20 },
 });
