@@ -1,9 +1,7 @@
-export function tryRequire(path: string): number | undefined {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-return
-    const r = require(path);
-    return r;
-  } catch (e) {
-    return undefined;
-  }
+// ⚠️ Dynamic require() is not supported in Metro bundler.
+// In Rork / Web environment, we return undefined so the app can start.
+// On real device with local assets, this file will be replaced.
+
+export function tryRequire(_: string): number | undefined {
+  return undefined;
 }
