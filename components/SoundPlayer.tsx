@@ -1,150 +1,348 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Audio, AVPlaybackStatus, Video, ResizeMode } from 'expo-av';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  ActivityIndicator,
+  StatusBar,
+  Platform,
+} from 'react-native';
+import { VideoView, useVideoPlayer } from 'expo-video';
+import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
-import type { SoundConfig } from '@/types/soundsConfig';
+import { SoundConfig } from '@/types/soundsConfig';
+import { soundsConfig as sounds } from '@/constants/soundsConfig';
 
 interface Props {
   sound: SoundConfig;
   onClose: () => void;
 }
 
-export function SoundPlayer({ sound, onClose }: Props) {
-  const [audioObj, setAudioObj] = useState<Audio.Sound | null>(null);
+const AUTO_HIDE_MS = 3000;
+
+export function SoundPlayer({ sound: initialSound, onClose }: Props) {
+  const [current, setCurrent] = useState<SoundConfig>(initialSound);
+  const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [muted, setMuted] = useState(false);
-  const videoRef = useRef<Video | null>(null);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const audioRef = useRef<Audio.Sound | null>(null);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const toSource = useCallback((src?: number | string | null) => {
+    if (!src) return undefined;
+    return typeof src === 'number' ? src : { uri: src };
+  }, []);
+
+  const audioSource = useMemo(
+    () => toSource(current.audio ?? undefined),
+    [current, toSource]
+  );
+  const videoSource = useMemo(() => toSource(current.video), [current, toSource]);
+
+  const videoPlayer = useVideoPlayer(videoSource as any, (player) => {
+    player.loop = true;
+    player.muted = true;
+  });
+
+  const currentIndex = useMemo(() => {
+    const i = sounds.findIndex((s) => s.title === current.title);
+    return i >= 0 ? i : 0;
+  }, [current]);
+
+  const hasPrev = currentIndex > 0;
+  const hasNext = currentIndex < sounds.length - 1;
+
+  const showControls = useCallback(() => {
+    setControlsVisible(true);
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setControlsVisible(false), AUTO_HIDE_MS);
+  }, []);
+
+  const hideControlsNow = useCallback(() => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    setControlsVisible(false);
+  }, []);
 
   useEffect(() => {
-    let mounted = true;
-
-    const start = async () => {
-      setLoading(true);
-      try {
-        const audioTrack = sound.audio;
-        if (audioTrack && mounted) {
-          const audioSource = typeof audioTrack === 'string' ? { uri: audioTrack } : audioTrack;
-          const { sound: created } = await Audio.Sound.createAsync(
-            audioSource as any,
-            { shouldPlay: true, isLooping: true },
-            onPlaybackStatus
-          );
-          if (mounted) {
-            setAudioObj(created);
-            setIsPlaying(true);
-          } else {
-            await created.unloadAsync();
-          }
-        }
-      } catch (error) {
-        console.error('[SoundPlayer] Error loading audio:', error);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+    return () => {
+      if (hideTimer.current) clearTimeout(hideTimer.current);
+      if (audioRef.current) {
+        audioRef.current.unloadAsync().catch(() => {});
+        audioRef.current = null;
       }
     };
+  }, []);
 
-    start();
+  const loadAudio = useCallback(async () => {
+    if (!audioSource) return;
+    if (audioRef.current) {
+      try {
+        await audioRef.current.unloadAsync();
+      } catch {}
+      audioRef.current = null;
+    }
+    const { sound: snd } = await Audio.Sound.createAsync(
+      audioSource as any,
+      { shouldPlay: true, isLooping: true, volume: 1.0 },
+      (status: AVPlaybackStatus) => {
+        if ('isLoaded' in status && status.isLoaded) {
+          setIsPlaying(status.isPlaying);
+        }
+      }
+    );
+    audioRef.current = snd;
+  }, [audioSource]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: true,
+          shouldDuckAndroid: true,
+          allowsRecordingIOS: false,
+          interruptionModeAndroid: 1,
+          interruptionModeIOS: 1,
+        });
+
+        await loadAudio();
+
+        if (videoSource && videoPlayer) {
+          videoPlayer.play();
+        }
+
+        if (!cancelled) {
+          setIsLoading(false);
+          setIsPlaying(true);
+          showControls();
+        }
+      } catch (e: any) {
+        console.warn('[SoundPlayer] load error', e?.message ?? e);
+        if (!cancelled) {
+          setError("Impossible de charger ce média");
+          setIsLoading(false);
+          setIsPlaying(false);
+        }
+      }
+    })();
 
     return () => {
-      mounted = false;
-      if (audioObj) {
-        audioObj.unloadAsync();
-      }
+      cancelled = true;
     };
-  }, [sound]);
+  }, [current, loadAudio, videoSource, showControls, videoPlayer]);
 
-  const onPlaybackStatus = (status: AVPlaybackStatus) => {
-    if ('isLoaded' in status && status.isLoaded) setIsPlaying(status.isPlaying);
-  };
-
-  const togglePlay = async () => {
-    if (!audioObj) return;
-    if (isPlaying) {
-      await audioObj.pauseAsync();
-      setIsPlaying(false);
-      await videoRef.current?.pauseAsync();
-    } else {
-      await audioObj.playAsync();
-      setIsPlaying(true);
-      await videoRef.current?.playAsync();
+  const togglePlay = useCallback(async () => {
+    showControls();
+    try {
+      if (audioRef.current) {
+        if (isPlaying) await audioRef.current.pauseAsync();
+        else await audioRef.current.playAsync();
+      }
+      if (videoPlayer) {
+        if (videoPlayer.playing) {
+          videoPlayer.pause();
+        } else {
+          videoPlayer.play();
+        }
+      }
+    } catch (e) {
+      console.warn('[SoundPlayer] toggle error', e);
     }
-  };
+  }, [isPlaying, showControls, videoPlayer]);
 
-  const stopAll = async () => {
-    await audioObj?.stopAsync();
-    await videoRef.current?.stopAsync();
-    setIsPlaying(false);
-  };
+  const goNext = useCallback(() => {
+    showControls();
+    if (!hasNext) return;
+    setCurrent(sounds[currentIndex + 1]);
+  }, [currentIndex, hasNext, showControls]);
 
-  const toggleMute = async () => {
-    setMuted((m) => {
-      const next = !m;
-      audioObj?.setVolumeAsync(next ? 0 : 1);
-      return next;
-    });
-  };
+  const goPrev = useCallback(() => {
+    showControls();
+    if (!hasPrev) return;
+    setCurrent(sounds[currentIndex - 1]);
+  }, [currentIndex, hasPrev, showControls]);
 
-  const videoSource = typeof sound.video === 'string' ? { uri: sound.video } : sound.video;
+  const onScreenPress = useCallback(() => {
+    if (!controlsVisible) {
+      showControls();
+    } else {
+      showControls();
+    }
+  }, [controlsVisible, showControls]);
 
   return (
-    <View style={styles.wrapper}>
-      {videoSource ? (
-        <Video
-          ref={videoRef}
-          source={videoSource as any}
-          style={styles.backgroundVideo}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay
-          isLooping
-          isMuted={muted}
-        />
-      ) : (
-        <View style={styles.backgroundFallback} />
-      )}
+    <View style={styles.root}>
+      <StatusBar hidden={Platform.OS !== 'web'} barStyle="light-content" />
 
-      <View style={styles.overlay}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <Ionicons name="close" size={26} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.title}>{sound.title}</Text>
-          <View style={{ width: 40 }} />
-        </View>
+      <View style={styles.blackBg} />
 
-        <View style={styles.controls}>
-          {loading ? (
-            <ActivityIndicator color="#fff" />
+      <TouchableWithoutFeedback onPress={onScreenPress}>
+        <View style={styles.fullscreen}>
+          {videoSource ? (
+            <VideoView
+              player={videoPlayer}
+              style={styles.video}
+              nativeControls={false}
+            />
           ) : (
-            <>
-              <TouchableOpacity onPress={togglePlay} style={styles.btn}>
-                <Ionicons name={isPlaying ? 'pause' : 'play'} size={36} color="#fff" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={stopAll} style={styles.btn}>
-                <Ionicons name="stop" size={28} color="#fff" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={toggleMute} style={styles.btn}>
-                <Ionicons name={muted ? 'volume-mute' : 'volume-high'} size={28} color="#fff" />
-              </TouchableOpacity>
-            </>
+            <View style={styles.videoFallback} />
+          )}
+
+          <View pointerEvents="none" style={styles.overlayTop} />
+          <View pointerEvents="none" style={styles.overlayBottom} />
+
+          {controlsVisible && (
+            <View style={styles.controlsWrap}>
+              <View style={styles.topBar}>
+                <TouchableOpacity
+                  onPress={() => {
+                    hideControlsNow();
+                    onClose();
+                  }}
+                  style={styles.iconBtn}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="close" size={24} color="#fff" />
+                </TouchableOpacity>
+                <Text style={styles.title} numberOfLines={1}>
+                  {current.title}
+                </Text>
+                <View style={styles.rightGap} />
+              </View>
+
+              <View style={styles.centerRow}>
+                <TouchableOpacity
+                  onPress={goPrev}
+                  disabled={!hasPrev}
+                  style={[styles.circleBtn, !hasPrev && styles.btnDisabled]}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="play-skip-back" size={26} color="#fff" />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={togglePlay} style={styles.playBtn} activeOpacity={0.9}>
+                  <Ionicons name={isPlaying ? 'pause' : 'play'} size={30} color="#000" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={goNext}
+                  disabled={!hasNext}
+                  style={[styles.circleBtn, !hasNext && styles.btnDisabled]}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="play-skip-forward" size={26} color="#fff" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.bottomBar}>
+                {isLoading ? (
+                  <View style={styles.loadingRow}>
+                    <ActivityIndicator size="small" color="#fff" />
+                    <Text style={styles.loadingTxt}>Chargement…</Text>
+                  </View>
+                ) : error ? (
+                  <Text style={styles.errorTxt}>{error}</Text>
+                ) : (
+                  <Text style={styles.helpTxt}>Touchez l&apos;écran pour afficher/masquer les contrôles</Text>
+                )}
+              </View>
+            </View>
           )}
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#000' },
-  backgroundVideo: { position: 'absolute', width: '100%', height: '100%' },
-  backgroundFallback: { position: 'absolute', width: '100%', height: '100%', backgroundColor: '#0a0a0f' },
-  overlay: { flex: 1, justifyContent: 'space-between', padding: 20 },
-  header: { marginTop: 40, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  closeBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
-  title: { color: '#fff', fontSize: 18, fontWeight: '700' },
-  controls: { alignSelf: 'center', flexDirection: 'row', gap: 16, marginBottom: 80 },
-  btn: { marginHorizontal: 12, padding: 8, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 10 },
+  root: { position: 'absolute', inset: 0, backgroundColor: '#000' },
+  blackBg: { position: 'absolute', inset: 0, backgroundColor: '#000' },
+  fullscreen: { position: 'absolute', inset: 0, backgroundColor: '#000' },
+  video: { position: 'absolute', inset: 0 },
+  videoFallback: { position: 'absolute', inset: 0, backgroundColor: '#0b0b0f' },
+
+  overlayTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 120,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+  },
+  overlayBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 160,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+
+  controlsWrap: { position: 'absolute', inset: 0, justifyContent: 'space-between' },
+
+  topBar: {
+    marginTop: 24,
+    paddingHorizontal: 16,
+    height: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rightGap: { width: 40 },
+  title: {
+    flex: 1,
+    textAlign: 'center',
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+
+  centerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 22,
+  },
+  circleBtn: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  playBtn: {
+    width: 78,
+    height: 78,
+    borderRadius: 39,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnDisabled: { opacity: 0.35 },
+
+  bottomBar: { paddingHorizontal: 16, paddingBottom: 28, alignItems: 'center' },
+  loadingRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  loadingTxt: { color: '#fff', fontSize: 14 },
+  helpTxt: { color: 'rgba(255,255,255,0.7)', fontSize: 12 },
+  errorTxt: { color: '#ff7a7a', fontSize: 13, textAlign: 'center' },
 });
+
 export default SoundPlayer;
