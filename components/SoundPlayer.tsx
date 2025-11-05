@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Audio, AVPlaybackStatus, Video, ResizeMode } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,35 +16,45 @@ export function SoundPlayer({ sound, onClose }: Props) {
   const [muted, setMuted] = useState(false);
   const videoRef = useRef<Video | null>(null);
 
-  const cleanup = useCallback(async () => {
-    if (audioObj) await audioObj.unloadAsync();
-  }, [audioObj]);
-
-  const start = useCallback(async () => {
-    setLoading(true);
-    try {
-      const audioTrack = sound.audio;
-      if (audioTrack) {
-        const audioSource = typeof audioTrack === 'string' ? { uri: audioTrack } : audioTrack;
-        const { sound: created } = await Audio.Sound.createAsync(
-          audioSource as any,
-          { shouldPlay: true, isLooping: true },
-          onPlaybackStatus
-        );
-        setAudioObj(created);
-      }
-      setIsPlaying(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [sound]);
-
   useEffect(() => {
-    start();
-    return () => {
-      cleanup();
+    let mounted = true;
+
+    const start = async () => {
+      setLoading(true);
+      try {
+        const audioTrack = sound.audio;
+        if (audioTrack && mounted) {
+          const audioSource = typeof audioTrack === 'string' ? { uri: audioTrack } : audioTrack;
+          const { sound: created } = await Audio.Sound.createAsync(
+            audioSource as any,
+            { shouldPlay: true, isLooping: true },
+            onPlaybackStatus
+          );
+          if (mounted) {
+            setAudioObj(created);
+            setIsPlaying(true);
+          } else {
+            await created.unloadAsync();
+          }
+        }
+      } catch (error) {
+        console.error('[SoundPlayer] Error loading audio:', error);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
     };
-  }, [start, cleanup]);
+
+    start();
+
+    return () => {
+      mounted = false;
+      if (audioObj) {
+        audioObj.unloadAsync();
+      }
+    };
+  }, [sound]);
 
   const onPlaybackStatus = (status: AVPlaybackStatus) => {
     if ('isLoaded' in status && status.isLoaded) setIsPlaying(status.isPlaying);
