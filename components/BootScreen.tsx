@@ -240,7 +240,7 @@ export function BootScreen({ onFinish }: BootScreenProps) {
           <View style={styles.logoShadow} />
           <Image
             source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/719ruaz0g96bgzbih3j9r' }}
-            style={styles.logoImage}
+            style={[styles.logoImage, { tintColor: 'white' }]}
             resizeMode="contain"
           />
         </Animated.View>
