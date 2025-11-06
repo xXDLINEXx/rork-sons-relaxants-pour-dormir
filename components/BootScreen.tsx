@@ -187,11 +187,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
-    marginTop: -120,
   },
   textContainer: {
     flexDirection: 'row',
-    marginTop: 16,
+    marginTop: 24,
     flexWrap: 'wrap',
     justifyContent: 'center',
     paddingHorizontal: 20,

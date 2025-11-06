@@ -25,7 +25,7 @@ const sleepSounds = [
     id: "firecamp",
     title: "Crackling Fireplace",
     description: "Warm fire sounds for deep sleep",
-    thumbnail: "https://images.unsplash.com/photo-1548574505-5e239809ee19?w=400&q=80",
+    thumbnail: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/vclyvz4rbq5hysq20lv6",
     gradient: "linear-gradient(135deg, hsl(20 60% 20%), hsl(10 50% 15%))",
   },
   {
