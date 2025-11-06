@@ -25,7 +25,7 @@ const sleepSounds = [
     id: "firecamp",
     title: "Crackling Fireplace",
     description: "Warm fire sounds for deep sleep",
-    thumbnail: "https://images.unsplash.com/photo-1525118970942-9b52ce5637e8?w=400&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400&q=80",
     gradient: "linear-gradient(135deg, hsl(20 60% 20%), hsl(10 50% 15%))",
   },
   {
@@ -161,11 +161,11 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingTop: 0,
+    paddingBottom: 8,
   },
   iconContainer: {
-    marginBottom: -20,
+    marginBottom: -30,
   },
   logo: {
     width: 600,
@@ -179,8 +179,8 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     paddingHorizontal: 32,
     maxWidth: 400,
-    marginTop: -30,
-    marginBottom: 8,
+    marginTop: -40,
+    marginBottom: 12,
   },
   grid: {
     flexDirection: 'row',
