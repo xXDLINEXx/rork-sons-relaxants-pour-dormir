@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Dimensions, Image } from 'react-native';
+import { View, StyleSheet, Animated, Dimensions, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
@@ -15,6 +15,24 @@ export function BootScreen({ onFinish }: BootScreenProps) {
   const wave1 = useRef(new Animated.Value(0)).current;
   const wave2 = useRef(new Animated.Value(0)).current;
   const wave3 = useRef(new Animated.Value(0)).current;
+  
+  const letters = 'SLEEPI'.split('');
+  const letterAnims = useRef(
+    letters.map(() => ({
+      translateY: new Animated.Value(0),
+      rotate: new Animated.Value(0),
+      scale: new Animated.Value(1),
+    }))
+  ).current;
+  
+  const particles = useRef(
+    Array.from({ length: 15 }).map(() => ({
+      x: new Animated.Value(Math.random() * width),
+      y: new Animated.Value(height + Math.random() * 200),
+      opacity: new Animated.Value(0.3 + Math.random() * 0.4),
+      scale: new Animated.Value(0.5 + Math.random() * 1),
+    }))
+  ).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -60,6 +78,87 @@ export function BootScreen({ onFinish }: BootScreenProps) {
       })
     ).start();
 
+    letterAnims.forEach((anim, index) => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(index * 100),
+          Animated.parallel([
+            Animated.sequence([
+              Animated.timing(anim.translateY, {
+                toValue: -15,
+                duration: 800,
+                useNativeDriver: true,
+              }),
+              Animated.timing(anim.translateY, {
+                toValue: 0,
+                duration: 800,
+                useNativeDriver: true,
+              }),
+            ]),
+            Animated.sequence([
+              Animated.timing(anim.rotate, {
+                toValue: 1,
+                duration: 800,
+                useNativeDriver: true,
+              }),
+              Animated.timing(anim.rotate, {
+                toValue: 0,
+                duration: 800,
+                useNativeDriver: true,
+              }),
+            ]),
+            Animated.sequence([
+              Animated.timing(anim.scale, {
+                toValue: 1.1,
+                duration: 800,
+                useNativeDriver: true,
+              }),
+              Animated.timing(anim.scale, {
+                toValue: 1,
+                duration: 800,
+                useNativeDriver: true,
+              }),
+            ]),
+          ]),
+        ])
+      ).start();
+    });
+
+    particles.forEach((particle, index) => {
+      const duration = 4000 + Math.random() * 3000;
+      const delay = Math.random() * 1000;
+      
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.parallel([
+            Animated.timing(particle.y, {
+              toValue: -100,
+              duration,
+              useNativeDriver: true,
+            }),
+            Animated.sequence([
+              Animated.timing(particle.opacity, {
+                toValue: 0.8,
+                duration: duration / 3,
+                useNativeDriver: true,
+              }),
+              Animated.timing(particle.opacity, {
+                toValue: 0,
+                duration: (duration * 2) / 3,
+                useNativeDriver: true,
+              }),
+            ]),
+          ]),
+          Animated.timing(particle.y, {
+            toValue: height + 100,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    });
+
     const timeout = setTimeout(() => {
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -80,7 +179,7 @@ export function BootScreen({ onFinish }: BootScreenProps) {
     return () => {
       clearTimeout(timeout);
     };
-  }, [fadeAnim, scaleAnim, logoOpacity, wave1, wave2, wave3, onFinish]);
+  }, [fadeAnim, scaleAnim, logoOpacity, wave1, wave2, wave3, letterAnims, particles, onFinish]);
 
 
 
@@ -186,20 +285,55 @@ export function BootScreen({ onFinish }: BootScreenProps) {
           ))}
         </Animated.View>
 
+        {particles.map((particle, index) => (
+          <Animated.View
+            key={index}
+            style={[
+              styles.particle,
+              {
+                transform: [
+                  { translateX: particle.x },
+                  { translateY: particle.y },
+                  { scale: particle.scale },
+                ],
+                opacity: particle.opacity,
+              },
+            ]}
+          />
+        ))}
+
         <Animated.View
           style={[
             styles.contentContainer,
             {
               opacity: logoOpacity,
-              transform: [{ scale: scaleAnim }],
             },
           ]}
         >
-          <Image
-            source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/uiamvomi7oant6plfs9c6' }}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
+          <View style={styles.textContainer}>
+            {letters.map((letter, index) => (
+              <Animated.Text
+                key={index}
+                style={[
+                  styles.letter,
+                  {
+                    transform: [
+                      { translateY: letterAnims[index].translateY },
+                      {
+                        rotate: letterAnims[index].rotate.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '5deg'],
+                        }),
+                      },
+                      { scale: letterAnims[index].scale },
+                    ],
+                  },
+                ]}
+              >
+                {letter}
+              </Animated.Text>
+            ))}
+          </View>
         </Animated.View>
       </LinearGradient>
     </View>
@@ -227,9 +361,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 10,
   },
-  logoImage: {
-    width: 400,
-    height: 400,
+  textContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  letter: {
+    fontSize: 72,
+    fontWeight: '700' as const,
+    color: '#60A5FA',
+    textShadowColor: 'rgba(96, 165, 250, 0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
+    marginHorizontal: 2,
+  },
+  particle: {
+    position: 'absolute',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#60A5FA',
+    shadowColor: '#60A5FA',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
   },
   wave: {
     position: 'absolute',
