@@ -127,7 +127,7 @@ export default function HomeScreen() {
           <View style={styles.iconContainer}>
             <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
               <Image
-                source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/mhnct787806aiuusxjcgy' }}
+                source={{ uri: 'https://r2-pub.rork.com/generated-images/4d1b5f1d-0287-4b60-9ef7-c2e1101043c2.png' }}
                 style={styles.logo}
                 resizeMode="contain"
               />
