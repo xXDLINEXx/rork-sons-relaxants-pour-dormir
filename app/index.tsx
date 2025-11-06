@@ -31,6 +31,22 @@ const soundMapping: { [key: string]: string } = {
   "meditation": "417 Hz",
 };
 
+const getFrequencyImage = (frequencyId: string): string => {
+  const imageMapping: { [key: string]: string } = {
+    '4-7hz': 'https://images.unsplash.com/photo-1494233892892-84542a694e72?w=400&q=80',
+    '8-12hz': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
+    '10hz': 'https://images.unsplash.com/photo-1534551767192-78b8dd45b51b?w=400&q=80',
+    '33hz': 'https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=400&q=80',
+    '66hz': 'https://images.unsplash.com/photo-1470790376778-a9fbc86d70e2?w=400&q=80',
+    '396-417-639': 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&q=80',
+    '417hz': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80',
+    '852hz': 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400&q=80',
+    '1441hz': 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=400&q=80',
+    '2772hz': 'https://images.unsplash.com/photo-1484950763426-56b5bf172dbb?w=400&q=80',
+  };
+  return imageMapping[frequencyId] || 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&q=80';
+};
+
 const sleepSounds = [
   {
     id: "lake",
@@ -198,13 +214,14 @@ export default function HomeScreen() {
           <View style={styles.grid}>
             {healingFrequencies.map((freq) => {
               console.log(`[Frequency] ${freq.title}: ${freq.audioUrl}`);
+              const frequencyImage = getFrequencyImage(freq.id);
               return (
                 <View key={freq.id} style={styles.gridItem}>
                   <SoundCard
                     id={freq.id}
                     title={freq.title}
                     description={freq.description}
-                    thumbnail={`https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&q=80`}
+                    thumbnail={frequencyImage}
                     gradient={`linear-gradient(135deg, ${freq.color}cc, ${freq.color}99, #000000ee)`}
                     audioUrl={freq.audioUrl}
                   />
