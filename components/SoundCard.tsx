@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { mediaMap } from '@/utils/mediaMap';
 
 interface SoundCardProps {
   id: string;
@@ -18,13 +17,8 @@ export function SoundCard({ id, title, description, thumbnail, gradient, audioUr
   const gradientColors = parseGradient(gradient);
 
   const handlePress = () => {
-    const mediaItem = mediaMap.find(m => m.id === id);
-    if (mediaItem) {
-      console.log('[SoundCard] Opening fullscreen player for:', id);
-      router.push(`/fullscreen-player?mediaId=${id}`);
-    } else {
-      console.log('[SoundCard] Media not found in mediaMap:', id);
-    }
+    console.log('[SoundCard] Opening fullscreen player for:', id);
+    router.push(`/fullscreen-player?mediaId=${id}`);
   };
 
   return (
