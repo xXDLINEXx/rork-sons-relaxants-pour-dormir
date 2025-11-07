@@ -34,7 +34,7 @@ const soundMapping: { [key: string]: string } = {
 const getFrequencyImage = (frequencyId: string): string => {
   const imageMapping: { [key: string]: string } = {
     '4-7hz': 'https://images.unsplash.com/photo-1494233892892-84542a694e72?w=400&q=80',
-    '8-12hz': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
+    '8-12hz': 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&q=80',
     '10hz': 'https://images.unsplash.com/photo-1534551767192-78b8dd45b51b?w=400&q=80',
     '33hz': 'https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=400&q=80',
     '66hz': 'https://images.unsplash.com/photo-1470790376778-a9fbc86d70e2?w=400&q=80',
