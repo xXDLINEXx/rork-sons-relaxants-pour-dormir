@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Sons Relaxants pour Dormir",
-    "slug": "sons-relaxants-pour-dormir",
+    "name": "Serenity",
+    "slug": "serenity",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "sonsrelaxantsapp",
+    "scheme": "serenityapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -15,10 +15,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.rork.sons-relaxants-pour-dormir",
+      "bundleIdentifier": "app.rork.serenity",
       "infoPlist": {
         "UIBackgroundModes": ["audio"],
-        "NSMicrophoneUsageDescription": "Cette application nécessite l'accès au microphone pour certaines fonctionnalités audio."
+        "NSMicrophoneUsageDescription": "Allow Serenity to access your microphone for audio playback."
       }
     },
     "android": {
@@ -26,10 +26,11 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.sons_relaxants_pour_dormir",
+      "package": "app.rork.serenity",
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.WRITE_SETTINGS"
       ]
     },
     "web": {
@@ -45,7 +46,7 @@
       [
         "expo-av",
         {
-          "microphonePermission": "L'application a besoin de l'accès au micro pour lire et contrôler certains sons."
+          "microphonePermission": "Allow Serenity to access your microphone for certain sound features."
         }
       ],
       [
@@ -71,3 +72,4 @@
     "owner": "xxdlinexx"
   }
 }
+
