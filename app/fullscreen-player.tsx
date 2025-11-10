@@ -2,12 +2,12 @@ import * as React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import { useLocalSearchParams } from 'expo-router';
-// ⚠️ Chemin relatif depuis /app vers /utils
+// ✅ Bon chemin relatif depuis /app/
 import { getVideoSource } from '../utils/tryRequire';
 
 export default function FullscreenPlayerScreen() {
   const params = useLocalSearchParams<{ mediaId?: string }>();
-  const mediaId = params.mediaId || 'bruit-blanc'; // valeur par défaut de secours
+  const mediaId = params.mediaId || 'bruit-blanc'; // valeur par défaut
 
   return (
     <View style={styles.container}>
@@ -24,6 +24,12 @@ export default function FullscreenPlayerScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
-  video: { flex: 1 },
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  video: {
+    flex: 1,
+  },
 });
+
