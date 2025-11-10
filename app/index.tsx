@@ -35,7 +35,7 @@ export default function IndexScreen() {
   return (
     <View style={styles.container}>
       <ImageBackground
-        source={require("../assets/images/bg-serenity.jpg")}
+        source={require("../assets/images/icon.jpg")}
         style={styles.background}
         blurRadius={8}
       >
