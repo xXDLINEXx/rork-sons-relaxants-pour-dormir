@@ -1,16 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Video } from 'expo-video';
-import { getVideoSource } from '../utils/tryRequire'; // adapte le chemin selon ton projet
+import { Video, ResizeMode } from 'expo-av'; // expo-av reste valide ici
+import { getVideoSource } from '../utils/tryRequire'; // bon chemin pour ton projet
 
 type FullScreenPlayerProps = {
   initialMediaId: string;
 };
 
-export function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
+export default function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
   const videoRef = useRef<Video>(null);
 
   useEffect(() => {
+    // Nettoyage lors du retour arrière ou du démontage du composant
     return () => {
       if (videoRef.current) {
         videoRef.current.stopAsync?.().catch(() => {});
@@ -23,12 +24,13 @@ export function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
     <View style={styles.container}>
       <Video
         ref={videoRef}
-        source={getVideoSource(initialMediaId)}
+        source={getVideoSource(initialMediaId)} // lien dynamique vers ton utilitaire
         shouldPlay
         isLooping
         isMuted={false}
-        resizeMode="cover"
+        resizeMode={ResizeMode.COVER}
         style={styles.video}
+        useNativeControls
       />
     </View>
   );
