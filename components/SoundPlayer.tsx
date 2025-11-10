@@ -109,7 +109,7 @@ export function SoundPlayer({ sound: initialSound, onClose }: Props) {
         await loadAudio();
 
         if (videoRef.current) {
-          videoRef.current.playAsync?.().catch(() => {});
+          videoRef.current.playAsync?.();
         }
 
         if (!cancelled) {
@@ -130,7 +130,7 @@ export function SoundPlayer({ sound: initialSound, onClose }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [current, loadAudio, videoSource, showControls]);
+  }, [current, loadAudio, showControls]);
 
   const togglePlay = useCallback(async () => {
     showControls();
@@ -138,6 +138,11 @@ export function SoundPlayer({ sound: initialSound, onClose }: Props) {
       if (audioRef.current) {
         if (isPlaying) await audioRef.current.pauseAsync();
         else await audioRef.current.playAsync();
+      }
+      if (videoRef.current) {
+        const status = await videoRef.current.getStatusAsync?.();
+        if (status?.isPlaying) await videoRef.current.pauseAsync?.();
+        else await videoRef.current.playAsync?.();
       }
     } catch (e) {
       console.warn('[SoundPlayer] toggle error', e);
@@ -159,9 +164,8 @@ export function SoundPlayer({ sound: initialSound, onClose }: Props) {
   }, [currentIndex, hasPrev, showControls]);
 
   const onScreenPress = useCallback(() => {
-    if (!controlsVisible) showControls();
-    else showControls();
-  }, [controlsVisible, showControls]);
+    showControls();
+  }, [showControls]);
 
   return (
     <View style={styles.root}>
@@ -176,7 +180,6 @@ export function SoundPlayer({ sound: initialSound, onClose }: Props) {
               ref={videoRef}
               style={styles.video}
               source={videoSource as any}
-              nativeControls={false}
               shouldPlay
               isLooping
               isMuted
@@ -240,9 +243,7 @@ export function SoundPlayer({ sound: initialSound, onClose }: Props) {
                 ) : error ? (
                   <Text style={styles.errorTxt}>{error}</Text>
                 ) : (
-                  <Text style={styles.helpTxt}>
-                    Touchez l&apos;écran pour afficher/masquer les contrôles
-                  </Text>
+                  <Text style={styles.helpTxt}>Touchez l&apos;écran pour afficher/masquer les contrôles</Text>
                 )}
               </View>
             </View>
@@ -278,4 +279,3 @@ const styles = StyleSheet.create({
 });
 
 export default SoundPlayer;
-
