@@ -1,47 +1,42 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ArrowLeft } from 'lucide-react-native';
+import * as React from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SoundList } from '../components/SoundList';
-import SoundPlayer from '../components/SoundPlayer'; // ✅ maintenant dans /components
-import { SoundConfig } from '../types/soundsConfig';
+// ⚠️ Chemin relatif depuis /app vers /constants
+import { healingFrequencies } from '../constants/frequencies';
 
 export default function LocalPlayerScreen() {
-  const [selectedSound, setSelectedSound] = useState<SoundConfig | null>(null);
   const router = useRouter();
-
-  if (selectedSound) {
-    return (
-      <SoundPlayer
-        sound={selectedSound}
-        onClose={() => setSelectedSound(null)}
-      />
-    );
-  }
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <ArrowLeft color="#fff" size={22} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Sons Locaux</Text>
-        <View style={{ width: 22 }} />
-      </View>
-
-      <SoundList onSelectSound={setSelectedSound} type="local" />
+      <Text style={styles.title}>Fréquences locales</Text>
+      <FlatList
+        data={healingFrequencies}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingVertical: 12 }}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => router.push({ pathname: '/player', params: { id: item.id, type: 'frequency' } })}
+          >
+            <Text style={styles.rowTitle}>{item.title}</Text>
+            {'frequency' in item ? (
+              <Text style={styles.rowDesc}>{item.frequency} Hz</Text>
+            ) : (
+              <Text style={styles.rowDesc} numberOfLines={1}>{item.description}</Text>
+            )}
+          </TouchableOpacity>
+        )}
+        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0b0b0f', paddingTop: 42 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginBottom: 10,
-  },
-  title: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  container: { flex: 1, padding: 16, backgroundColor: '#0b0b0f' },
+  title: { color: '#fff', fontSize: 22, fontWeight: '800', marginBottom: 12 },
+  row: { backgroundColor: '#111827', padding: 14, borderRadius: 12 },
+  rowTitle: { color: '#fff', fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  rowDesc: { color: 'rgba(255,255,255,0.65)', fontSize: 12 },
 });
