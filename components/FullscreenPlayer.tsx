@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Video } from 'expo-video';
-import { getVideoSource } from '@/utils/tryRequire';
+import { getVideoSource } from '../utils/tryRequire'; // adapte le chemin selon ton projet
 
 type FullScreenPlayerProps = {
   initialMediaId: string;

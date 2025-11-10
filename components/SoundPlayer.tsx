@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, TouchableWithoutFeedback, ToastAndroid } from 'react-native';
 import { Video } from 'expo-video';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { soundsConfig as sounds } from '@/constants/soundsConfig';
 import { SoundConfig } from '@/types/soundsConfig';
+import { getAudioSource, getVideoSource } from '../utils/tryRequire'; // adapter le chemin selon ton projet
 
 interface Props {
   sound: SoundConfig;
@@ -17,13 +18,12 @@ export function SoundPlayer({ sound: initialSound, onClose }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [controlsVisible, setControlsVisible] = useState(true);
-
   const videoRef = useRef<Video>(null);
   const audioRef = useRef<Audio.Sound | null>(null);
   const hideTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const audioSource = current.audio ? { uri: current.audio } : undefined;
-  const videoSource = current.video ? { uri: current.video } : undefined;
+  const audioSource = current.audio ? getAudioSource(current.audio) : undefined;
+  const videoSource = current.video ? getVideoSource(current.video) : undefined;
 
   const currentIndex = sounds.findIndex((s) => s.id === current.id);
   const hasPrev = currentIndex > 0;

@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   ToastAndroid,
-  SafeAreaView,
-  StyleSheet,
   Dimensions,
 } from "react-native";
 import Slider from "@react-native-community/slider";
@@ -39,59 +37,43 @@ const SUBTITRE = { color: "#fecb6e", fontWeight: "bold", fontSize: 18 };
 const soundVideoMap = [
   {
     label: "Pluie",
-    audio:
-      "https://drive.google.com/uc?export=download&id=1jo-vmLHvV7xpqou6cyHH9L0Kx-zCOzOg",
-    video:
-      "https://drive.google.com/uc?export=download&id=1aERgTV5KxBezLYTQO15dFY0mtGzkVHu0",
+    audio: require("./media/audio/pluie-douce.mp3"),
+    video: require("./media/video/pluie-douce.mp4"),
   },
   {
-    label: "son vague",
-    audio:
-      "https://drive.google.com/uc?export=download&id=1Km4fMTU-JalnNqz4YDjiiJRu-_My_vjw",
-    video:
-      "https://drive.google.com/uc?export=download&id=1ZNT4mCTBYwNp1XtGhjeLEaJCTqDX17hM",
+    label: "Feu de camp",
+    audio: require("./media/audio/feu-de-camp.mp3"),
+    video: require("./media/video/feu-de-camp.mp4"),
   },
   {
-    label: "Nuit d'été",
-    audio:
-      "https://drive.google.com/uc?export=download&id=16Nt272zusQyhif1ZW6mfZLCO5YtDXeJ5",
-    video:
-      "https://drive.google.com/uc?export=download&id=1hzcKntamDo7dQr-gErVvgFgi7qGSwSoX",
+    label: "Forêt paisible",
+    audio: require("./media/audio/foret-paisible.mp3"),
+    video: require("./media/video/foret-paisible.mp4"),
   },
   {
-    label: "Son avec lac",
-    audio:
-      "https://drive.google.com/uc?export=download&id=1ajDj94TgIiuhr_RBZjTwC6VALJwy6FKB",
-    video:
-      "https://drive.google.com/uc?export=download&id=1ricML_bqX-Ylrx6oAx5G8ugHjDfTYJbH",
+    label: "Orage apaisant",
+    audio: require("./media/audio/orage-apaisant.mp3"),
+    video: require("./media/video/orage-apaisant.mp4"),
   },
   {
-    label: "feu",
-    audio:
-      "https://drive.google.com/uc?export=download&id=1jBWHB97Y3IEt0QG8RP_E7gNhB-Zycc0g",
-    video:
-      "https://drive.google.com/uc?export=download&id=1cUJDop9e0iKzX-dj5XnqOlTFZFRWmaNv",
+    label: "Rivière calme",
+    audio: require("./media/audio/riviere-calme.mp3"),
+    video: require("./media/video/riviere-calme.mp4"),
   },
   {
-    label: "Orage",
-    audio:
-      "https://drive.google.com/uc?export=download&id=1sqCw0npEZ9n9jx9t39FH0rJXh5pcnxPV",
-    video:
-      "https://drive.google.com/uc?export=download&id=1wBYWs-jPcMHlaPY8FayGrJ0ajl8woChB",
+    label: "Vague de l'océan",
+    audio: require("./media/audio/vague-de-locean.mp3"),
+    video: require("./media/video/vague-de-locean.mp4"),
   },
   {
-    label: "Calming Song",
-    audio:
-      "https://drive.google.com/uc?export=download&id=1XDcJIVTehsXvlmh98y0-bcqTTH1DmaRO",
-    video:
-      "https://drive.google.com/uc?export=download&id=1BaIOJrLqFVXvQvYMnQDXm3s6lpoxQYgO",
+    label: "Vent léger",
+    audio: require("./media/audio/vent-leger.mp3"),
+    video: require("./media/video/vent-leger.mp4"),
   },
   {
-    label: "Bruit Blanc",
-    audio:
-      "https://drive.google.com/uc?export=download&id=1nubvhisU6cJMnUGhkuDfOTHdjHIHGon1",
-    video:
-      "https://drive.google.com/uc?export=download&id=1Q1fxpadNtlMgKg2SldN_XR5gATitnImN",
+    label: "Bruit blanc",
+    audio: require("./media/audio/bruit-blanc.mp3"),
+    video: require("./media/video/bruit-blanc.mp4"),
   },
 ];
 
@@ -99,73 +81,56 @@ const soundVideoMap = [
 const frequencies = [
   {
     label: "8-to-12-hz",
-    url: "https://drive.google.com/uc?export=download&id=165ZSFfznIaISSZ0bdU0h429HpjHGi6-b",
-    video:
-      "https://drive.google.com/uc?export=download&id=1wBYWs-jPcMHlaPY8FayGrJ0ajl8woChB",
+    url: require("./media/frequency/8-to-12-hz.mp3"),
+    video: require("./media/video/frequence.mp4"),
   },
   {
     label: "396/417/639 Hz",
-    url: "https://drive.google.com/uc?export=download&id=1m6XR8Ldir2YqNm27EFj8nauoKJNs7iaG",
-    video:
-      "https://drive.google.com/uc?export=download&id=1BaIOJrLqFVXvQvYMnQDXm3s6lpoxQYgO",
+    url: require("./media/frequency/396-hz-417-hz-639-hz.mp3"),
+    video: require("./media/video/frequence.mp4"),
   },
   {
     label: "66 Hz",
-    url: "https://drive.google.com/uc?export=download&id=1L6_hFYZssckZYJSk2CJxCVLg-WBzFZGD",
-    video:
-      "https://drive.google.com/uc?export=download&id=1hzcKntamDo7dQr-gErVvgFgi7qGSwSoX",
+    url: require("./media/frequency/66hz.mp3"),
+    video: require("./media/video/frequence.mp4"),
   },
   {
     label: "1441 Hz",
-    url: "https://drive.google.com/uc?export=download&id=1K2XgzxsDE7_UiTJ-oD4zhR2ZonZIfCFl",
-    video:
-      "https://drive.google.com/uc?export=download&id=1ZNT4mCTBYwNp1XtGhjeLEaJCTqDX17hM",
+    url: require("./media/frequency/1441hz.mp3"),
+    video: require("./media/video/frequence.mp4"),
   },
   {
     label: "417 Hz",
-    url: "https://drive.google.com/uc?export=download&id=1pLwz5EKfIQ-HBxgIsdTGXNvL88MZ-vqf",
-    video:
-      "https://drive.google.com/uc?export=download&id=1aERgTV5KxBezLYTQO15dFY0mtGzkVHu0",
+    url: require("./media/frequency/417hz.mp3"),
+    video: require("./media/video/frequence.mp4"),
   },
   {
     label: "10 Hz",
-    url: "https://drive.google.com/uc?export=download&id=1AifsvOp4dPdwKKgdNvSjklIWh4_N_cVT",
-    video:
-      "https://drive.google.com/uc?export=download&id=1ricML_bqX-Ylrx6oAx5G8ugHjDfTYJbH",
+    url: require("./media/frequency/10hz.mp3"),
+    video: require("./media/video/frequence.mp4"),
   },
   {
     label: "2772 Hz",
-    url: "https://drive.google.com/uc?export=download&id=1B6cjAt8CMB4BQw7erwkML5HS5bYLHyZ9",
-    video:
-      "https://drive.google.com/uc?export=download&id=1Q1fxpadNtlMgKg2SldN_XR5gATitnImN",
+    url: require("./media/frequency/2772hz.mp3"),
+    video: require("./media/video/frequence.mp4"),
   },
   {
     label: "852 Hz",
-    url: "https://drive.google.com/uc?export=download&id=1WMr5N0hIr9AYpXCi0d2EHVvJkn5c29Tf",
-    video:
-      "https://drive.google.com/uc?export=download&id=1cUJDop9e0iKzX-dj5XnqOlTFZFRWmaNv",
+    url: require("./media/frequency/852hz.mp3"),
+    video: require("./media/video/frequence.mp4"),
   },
   {
     label: "33 Hz",
-    url: "https://drive.google.com/uc?export=download&id=1UpVc_aGRN4QS1KgAilxgFOrmZbdqmvDd",
-    video:
-      "https://drive.google.com/uc?export=download&id=1Q1fxpadNtlMgKg2SldN_XR5gATitnImN",
+    url: require("./media/frequency/33hz.mp3"),
+    video: require("./media/video/frequence.mp4"),
   },
   {
     label: "4-7 Hz + 417/639",
-    url: "https://drive.google.com/uc?export=download&id=1AjLjCEJwlrC2tUf1_YkOGWzBW7qglqX4",
-    video:
-      "https://drive.google.com/uc?export=download&id=1wBYWs-jPcMHlaPY8FayGrJ0ajl8woChB",
-  },
-  {
-    label: "fréquence",
-    url: "https://drive.google.com/uc?export=download&id=1RbxI41JdIXv2D75XvQ585Gk01F0nXk9p",
-    video:
-      "https://drive.google.com/uc?export=download&id=1nndFEg5PA0n01TReleklKZTZQAQWw5ix",
+    url: require("./media/frequency/4-7hz-with-417hz-639hz.mp3"),
+    video: require("./media/video/frequence.mp4"),
   },
 ];
 
-// Feedback/flush
 function showToast(message) {
   ToastAndroid.show(message, ToastAndroid.SHORT);
 }
@@ -180,18 +145,10 @@ async function flushSounds(soundRef, videoRef) {
   }
 }
 
-// Favoris section
 function FavoriteSoundsScreen({ favoriteIdxs }) {
   return (
     <ScrollView style={{ padding: 20 }}>
-      <Text
-        style={{
-          fontSize: 20,
-          color: "#fecb6e",
-          fontWeight: "bold",
-          marginBottom: 16,
-        }}
-      >
+      <Text style={{ fontSize: 20, color: "#fecb6e", fontWeight: "bold", marginBottom: 16 }}>
         ✨ Favoris
       </Text>
       {favoriteIdxs.length === 0 ? (
@@ -207,7 +164,6 @@ function FavoriteSoundsScreen({ favoriteIdxs }) {
   );
 }
 
-// Player Sons+Vidéo
 function SoundVideoPlayer() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [audioVolume, setAudioVolume] = useState(1);
@@ -222,7 +178,7 @@ function SoundVideoPlayer() {
     setIsPaused(false);
     if (soundRef.current) await soundRef.current.unloadAsync();
     const { sound } = await Audio.Sound.createAsync(
-      { uri: soundVideoMap[idx].audio },
+      current.audio,
       { shouldPlay: true, isLooping: true, volume: audioVolume }
     );
     soundRef.current = sound;
@@ -264,8 +220,7 @@ function SoundVideoPlayer() {
     setTimeout(() => playLooped(nextIdx), 50);
   }
   async function playPrev() {
-    let prevIdx =
-      (currentIdx - 1 + soundVideoMap.length) % soundVideoMap.length;
+    let prevIdx = (currentIdx - 1 + soundVideoMap.length) % soundVideoMap.length;
     setCurrentIdx(prevIdx);
     await stopAll();
     setTimeout(() => playLooped(prevIdx), 50);
@@ -295,18 +250,9 @@ function SoundVideoPlayer() {
         {favoriteIdxs.includes(currentIdx) && (
           <Text style={SUBTITRE}>❤️ Favori</Text>
         )}
-        <View
-          style={{
-            flexDirection: "row",
-            marginVertical: 8,
-            justifyContent: "space-between",
-          }}
-        >
+        <View style={{ flexDirection: "row", marginVertical: 8, justifyContent: "space-between" }}>
           <Button title="⏮" onPress={playPrev} />
-          <Button
-            title={isPaused ? "▶" : "▶ Jouer"}
-            onPress={isPaused ? resumeAll : () => playLooped()}
-          />
+          <Button title={isPaused ? "▶" : "▶ Jouer"} onPress={isPaused ? resumeAll : () => playLooped()} />
           <Button title="⏸" color="#fa0" onPress={pauseAll} />
           <Button title="⏹" color="#f44" onPress={stopAll} />
           <Button title="⏭" color="#44f" onPress={playNext} />
@@ -346,7 +292,7 @@ function SoundVideoPlayer() {
         />
         <Video
           ref={videoRef}
-          source={{ uri: current.video }}
+          source={current.video}
           rate={1.0}
           volume={videoVolume}
           isMuted={false}
@@ -365,7 +311,6 @@ function SoundVideoPlayer() {
   );
 }
 
-// Fréquences régénérantes + vidéo ambiance
 function FrequencyScreen() {
   const freqSound = useRef(null);
   const videoRef = useRef(null);
@@ -377,7 +322,7 @@ function FrequencyScreen() {
     setNowPlayingIdx(idx);
     if (freqSound.current) await freqSound.current.unloadAsync();
     const { sound } = await Audio.Sound.createAsync(
-      { uri: freq.url },
+      freq.url,
       { shouldPlay: true, isLooping: true, volume: freqVolume }
     );
     freqSound.current = sound;
@@ -407,9 +352,7 @@ function FrequencyScreen() {
         {frequencies.map((freq, idx) => (
           <Button
             key={freq.label}
-            title={
-              nowPlayingIdx === idx ? `[Lecture] ${freq.label}` : freq.label
-            }
+            title={nowPlayingIdx === idx ? `[Lecture] ${freq.label}` : freq.label}
             onPress={() => playFreq(idx)}
             color={nowPlayingIdx === idx ? "#59d7f8" : undefined}
           />
@@ -427,7 +370,7 @@ function FrequencyScreen() {
         {freq && nowPlayingIdx !== null && (
           <Video
             ref={videoRef}
-            source={{ uri: freq.video }}
+            source={freq.video}
             rate={1.0}
             volume={freqVolume}
             isMuted={false}
