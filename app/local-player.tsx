@@ -1,42 +1,104 @@
-import * as React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  StatusBar,
+  TouchableOpacity,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { ArrowLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-// ⚠️ Chemin relatif depuis /app vers /constants
-import { healingFrequencies } from '../constants/frequencies';
+import { SoundList } from '@/components/SoundList';
+import { SoundPlayer } from '@/components/SoundPlayer';
+import { SoundConfig } from '@/types/soundsConfig';
 
 export default function LocalPlayerScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const [selectedSound, setSelectedSound] = useState<SoundConfig | null>(null);
+
+  const handleClose = () => {
+    setSelectedSound(null);
+  };
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  if (selectedSound) {
+    return <SoundPlayer sound={selectedSound} onClose={handleClose} />;
+  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Fréquences locales</Text>
-      <FlatList
-        data={healingFrequencies}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingVertical: 12 }}
-        renderItem={({ item }) => (
+      <StatusBar barStyle="light-content" />
+      <LinearGradient
+        colors={['#0A0A0F', '#1E1B4B', '#312E81']}
+        style={styles.gradient}
+      >
+        <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
           <TouchableOpacity
-            style={styles.row}
-            onPress={() => router.push({ pathname: '/player', params: { id: item.id, type: 'frequency' } })}
+            style={styles.backButton}
+            onPress={handleBack}
+            testID="back-button"
           >
-            <Text style={styles.rowTitle}>{item.title}</Text>
-            {'frequency' in item ? (
-              <Text style={styles.rowDesc}>{item.frequency} Hz</Text>
-            ) : (
-              <Text style={styles.rowDesc} numberOfLines={1}>{item.description}</Text>
-            )}
+            <ArrowLeft size={28} color="#FFFFFF" strokeWidth={2.5} />
           </TouchableOpacity>
-        )}
-        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-      />
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>Serenity Local</Text>
+            <Text style={styles.headerSubtitle}>Sons & Fréquences offline</Text>
+          </View>
+          <View style={styles.placeholder} />
+        </View>
+
+        <SoundList onSelectSound={setSelectedSound} />
+      </LinearGradient>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#0b0b0f' },
-  title: { color: '#fff', fontSize: 22, fontWeight: '800', marginBottom: 12 },
-  row: { backgroundColor: '#111827', padding: 14, borderRadius: 12 },
-  rowTitle: { color: '#fff', fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  rowDesc: { color: 'rgba(255,255,255,0.65)', fontSize: 12 },
+  container: {
+    flex: 1,
+    backgroundColor: '#0A0A0F',
+  },
+  gradient: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerContent: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700' as const,
+    color: '#FFFFFF',
+    marginBottom: 4,
+    letterSpacing: 0.5,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    fontWeight: '400' as const,
+  },
+  placeholder: {
+    width: 44,
+  },
 });

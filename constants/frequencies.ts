@@ -1,95 +1,106 @@
-import { getFrequencySource } from "../utils/tryRequire";
-import { Radio, Zap, Waveform, Circle, Activity } from "lucide-react-native";
+import { tryRequire } from "@/utils/tryRequire";
 
-export const healingFrequencies = [
-  {
-    id: "417hz",
-    title: "Fréquence 417 Hz",
-    description: "Aide à éliminer les énergies négatives et favorise le changement.",
-    frequency: 417,
-    icon: Radio,
-    colors: ["#36D1DC", "#5B86E5"],
-    audioUrl: getFrequencySource("417hz"),
+export interface HealingFrequency {
+  id: string;
+  frequency: string;
+  title: string;
+  description: string;
+  benefits: string;
+  color: string;
+  audioUrl: string | number;
+}
+
+const palette = ['#8B5CF6', '#A78BFA', '#C4B5FD', '#DDD6FE', '#E9D5FF', '#FAF5FF', '#FDF4FF', '#FCE7F3', '#FBCFE8', '#F9A8D4'];
+
+export const healingFrequencies: HealingFrequency[] = [
+  { 
+    id: '4-7hz', 
+    frequency: '4-7 Hz', 
+    title: '4-7 Hz avec 417/639 Hz', 
+    description: 'Ondes Theta pour sommeil profond',
+    benefits: 'Favorise le sommeil profond, la méditation et la régénération cellulaire. Stimule la créativité et l\'intuition.',
+    color: palette[0], 
+    audioUrl: tryRequire('../media/frequency/4-7hz-with-417hz-639hz.mp3') ?? 'https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/frequency/4-7hz-with-417hz-639hz.mp3'
   },
-  {
-    id: "852hz",
-    title: "Fréquence 852 Hz",
-    description: "Renforce l’intuition et la connexion spirituelle.",
-    frequency: 852,
-    icon: Zap,
-    colors: ["#8360C3", "#2EBF91"],
-    audioUrl: getFrequencySource("852hz"),
+  { 
+    id: '8-12hz', 
+    frequency: '8-12 Hz', 
+    title: '8-12 Hz', 
+    description: 'Ondes Alpha pour relaxation',
+    benefits: 'État de relaxation profonde, réduction du stress et de l\'anxiété. Améliore la concentration et la clarté mentale.',
+    color: palette[1], 
+    audioUrl: tryRequire('../media/frequency/8-to-12-hz.mp3') ?? 'https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/frequency/8-to-12-hz.mp3'
   },
-  {
-    id: "396-hz-417-hz-639-hz",
-    title: "Fréquences 396 / 417 / 639 Hz",
-    description: "Élimine la peur, facilite la transformation et favorise les relations harmonieuses.",
-    frequency: "396-417-639",
-    icon: Waveform,
-    colors: ["#F7971E", "#FFD200"],
-    audioUrl: getFrequencySource("396-hz-417-hz-639-hz"),
+  { 
+    id: '10hz', 
+    frequency: '10 Hz', 
+    title: '10 Hz', 
+    description: 'Fréquence Alpha optimale',
+    benefits: 'Équilibre émotionnel et mental. Idéal pour la méditation et la visualisation positive.',
+    color: palette[2], 
+    audioUrl: tryRequire('../media/frequency/10hz.mp3') ?? 'https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/frequency/10hz.mp3'
   },
-  {
-    id: "4-7hz-with-417hz-639hz",
-    title: "Fréquences 4-7 Hz avec 417 & 639 Hz",
-    description: "Aide à atteindre un état méditatif profond et à guérir émotionnellement.",
-    frequency: "4-7-417-639",
-    icon: Circle,
-    colors: ["#00C9FF", "#92FE9D"],
-    audioUrl: getFrequencySource("4-7hz-with-417hz-639hz"),
+  { 
+    id: '33hz', 
+    frequency: '33 Hz', 
+    title: '33 Hz', 
+    description: 'Fréquence du Christ',
+    benefits: 'Harmonisation spirituelle, ouverture du cœur. Favorise la compassion et la connexion divine.',
+    color: palette[3], 
+    audioUrl: tryRequire('../media/frequency/33hz.mp3') ?? 'https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/frequency/33hz.mp3'
   },
-  {
-    id: "8-to-12-hz",
-    title: "Fréquence 8 à 12 Hz",
-    description: "Favorise la relaxation, la concentration et la créativité.",
-    frequency: "8-12",
-    icon: Activity,
-    colors: ["#43C6AC", "#F8FFAE"],
-    audioUrl: getFrequencySource("8-to-12-hz"),
+  { 
+    id: '66hz', 
+    frequency: '66 Hz', 
+    title: '66 Hz', 
+    description: 'Fréquence sacrée',
+    benefits: 'Activation énergétique et spirituelle. Renforce la vitalité et l\'alignement des chakras.',
+    color: palette[4], 
+    audioUrl: tryRequire('../media/frequency/66hz.mp3') ?? 'https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/frequency/66hz.mp3'
   },
-  {
-    id: "10hz",
-    title: "Fréquence 10 Hz",
-    description: "Stimule la relaxation et la mémoire, souvent utilisée pour la méditation.",
-    frequency: 10,
-    icon: Radio,
-    colors: ["#36D1DC", "#5B86E5"],
-    audioUrl: getFrequencySource("10hz"),
+  { 
+    id: '396-417-639', 
+    frequency: '396/417/639 Hz', 
+    title: '396/417/639 Hz', 
+    description: 'Triple fréquence Solfège',
+    benefits: 'Libération des peurs, transformation et harmonisation des relations. Puissante combinaison de guérison.',
+    color: palette[5], 
+    audioUrl: tryRequire('../media/frequency/396-hz-417-hz-639hz.mp3') ?? 'https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/frequency/396-hz-417-hz-639hz.mp3'
   },
-  {
-    id: "33hz",
-    title: "Fréquence 33 Hz",
-    description: "Équilibre les émotions et renforce la stabilité intérieure.",
-    frequency: 33,
-    icon: Circle,
-    colors: ["#4CA1AF", "#C4E0E5"],
-    audioUrl: getFrequencySource("33hz"),
+  { 
+    id: '417hz', 
+    frequency: '417 Hz', 
+    title: '417 Hz', 
+    description: 'Transformation et changement',
+    benefits: 'Facilite le changement, efface les expériences traumatisantes. Stimule la transformation positive.',
+    color: palette[6], 
+    audioUrl: tryRequire('../media/frequency/417hz.mp3') ?? 'https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/frequency/417hz.mp3'
   },
-  {
-    id: "66hz",
-    title: "Fréquence 66 Hz",
-    description: "Aide à la régénération physique et au bien-être global.",
-    frequency: 66,
-    icon: Waveform,
-    colors: ["#00B4DB", "#0083B0"],
-    audioUrl: getFrequencySource("66hz"),
+  { 
+    id: '852hz', 
+    frequency: '852 Hz', 
+    title: '852 Hz', 
+    description: 'Éveil spirituel',
+    benefits: 'Active l\'intuition et renforce la connexion spirituelle. Ouvre le troisième œil et la conscience supérieure.',
+    color: palette[7], 
+    audioUrl: tryRequire('../media/frequency/852hz.mp3') ?? 'https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/frequency/852hz.mp3'
   },
-  {
-    id: "1441hz",
-    title: "Fréquence 1441 Hz",
-    description: "Augmente la clarté mentale et l’alignement énergétique.",
-    frequency: 1441,
-    icon: Zap,
-    colors: ["#283048", "#859398"],
-    audioUrl: getFrequencySource("1441hz"),
+  { 
+    id: '1441hz', 
+    frequency: '1441 Hz', 
+    title: '1441 Hz', 
+    description: 'Fréquence de guérison',
+    benefits: 'Régénération cellulaire profonde. Aide à la guérison physique et émotionnelle.',
+    color: palette[8], 
+    audioUrl: tryRequire('../media/frequency/1441hz.mp3') ?? 'https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/frequency/1441hz.mp3'
   },
-  {
-    id: "2772hz",
-    title: "Fréquence 2772 Hz",
-    description: "Apaise les tensions et favorise la reconnexion à soi.",
-    frequency: 2772,
-    icon: Radio,
-    colors: ["#FF512F", "#DD2476"],
-    audioUrl: getFrequencySource("2772hz"),
+  { 
+    id: '2772hz', 
+    frequency: '2772 Hz', 
+    title: '2772 Hz', 
+    description: 'Haute fréquence énergétique',
+    benefits: 'Élévation vibratoire et purification énergétique. Stimule la clarté mentale et l\'éveil de la conscience.',
+    color: palette[9], 
+    audioUrl: tryRequire('../media/frequency/2772hz.mp3') ?? 'https://cdn.jsdelivr.net/gh/xXDLINEXx/serenity/media/frequency/2772hz.mp3'
   },
 ];
