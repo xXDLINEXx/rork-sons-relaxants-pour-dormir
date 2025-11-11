@@ -18,6 +18,7 @@ import { X, SkipForward, SkipBack, Volume2 } from 'lucide-react-native';
 import Slider from '@react-native-community/slider';
 import { soundsConfig } from '@/constants/soundsConfig';
 import { SoundConfig } from '@/types/soundsConfig';
+import { Asset } from 'expo-asset';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,28 +26,39 @@ interface FullScreenPlayerProps {
   initialMediaId: string;
 }
 
-function toSource(src: number | string | { uri: string } | null | undefined) {
+async function toSourceAsync(src: number | string | { uri: string } | null | undefined): Promise<string | number | { uri: string } | undefined> {
   if (!src) {
-    console.warn('[FullScreenPlayer] toSource: No source provided');
+    console.warn('[FullScreenPlayer] toSourceAsync: No source provided');
     return undefined;
   }
   
   if (typeof src === 'number') {
-    console.log('[FullScreenPlayer] toSource: Using local asset (number)');
+    console.log('[FullScreenPlayer] toSourceAsync: Using local asset (number)');
+    if (Platform.OS === 'web') {
+      try {
+        const asset = Asset.fromModule(src);
+        await asset.downloadAsync();
+        console.log('[FullScreenPlayer] toSourceAsync: Web asset URI:', asset.uri);
+        return { uri: asset.uri || '' };
+      } catch (error) {
+        console.error('[FullScreenPlayer] toSourceAsync: Failed to load asset on web:', error);
+        return undefined;
+      }
+    }
     return src;
   }
   
   if (typeof src === 'object' && 'uri' in src) {
-    console.log('[FullScreenPlayer] toSource: Using URI from object:', src.uri);
+    console.log('[FullScreenPlayer] toSourceAsync: Using URI from object:', src.uri);
     return src.uri ? { uri: src.uri } : undefined;
   }
   
   if (typeof src === 'string') {
-    console.log('[FullScreenPlayer] toSource: Using string URI:', src);
+    console.log('[FullScreenPlayer] toSourceAsync: Using string URI:', src);
     return { uri: src };
   }
   
-  console.warn('[FullScreenPlayer] toSource: Unknown source type:', typeof src, src);
+  console.warn('[FullScreenPlayer] toSourceAsync: Unknown source type:', typeof src, src);
   return undefined;
 }
 
@@ -60,12 +72,15 @@ export function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
   const [volume, setVolume] = useState<number>(1.0);
   const [brightness, setBrightness] = useState<number>(0.5);
   const [showControls, setShowControls] = useState<boolean>(true);
+  const [videoSource, setVideoSource] = useState<any>(undefined);
+  const [isLoadingVideo, setIsLoadingVideo] = useState<boolean>(true);
   
-  const videoSource = toSource(currentMedia?.video);
-  const videoPlayer = useVideoPlayer(videoSource as any, player => {
-    player.loop = true;
-    player.muted = true;
-    player.play();
+  const videoPlayer = useVideoPlayer(videoSource, player => {
+    if (videoSource) {
+      player.loop = true;
+      player.muted = true;
+      player.play();
+    }
   });
   
   const soundRef = useRef<Audio.Sound | null>(null);
@@ -162,6 +177,7 @@ export function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
     console.log('[FullScreenPlayer] Audio raw:', currentMedia.audio);
 
     await cleanup();
+    setIsLoadingVideo(true);
 
     try {
       await Audio.setAudioModeAsync({
@@ -171,13 +187,14 @@ export function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
       });
 
       console.log('[FullScreenPlayer] Loading audio...');
-      const audioSource = toSource(currentMedia.audio);
-      console.log('[FullScreenPlayer] Audio source after toSource:', audioSource);
+      const audioSource = await toSourceAsync(currentMedia.audio);
+      console.log('[FullScreenPlayer] Audio source after toSourceAsync:', audioSource);
       
       if (!audioSource) {
         console.error('[FullScreenPlayer] No audio source available after conversion');
         console.error('[FullScreenPlayer] Original audio value:', currentMedia.audio);
         console.error('[FullScreenPlayer] Audio type:', typeof currentMedia.audio);
+        setIsLoadingVideo(false);
         return;
       }
       
@@ -194,20 +211,27 @@ export function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
       await sound.playAsync();
       console.log('[FullScreenPlayer] Audio started successfully');
 
-      const videoSourceResolved = toSource(currentMedia.video);
-      console.log('[FullScreenPlayer] Video source after toSource:', videoSourceResolved);
+      console.log('[FullScreenPlayer] Loading video...');
+      const videoSourceResolved = await toSourceAsync(currentMedia.video);
+      console.log('[FullScreenPlayer] Video source after toSourceAsync:', videoSourceResolved);
       
-      if (videoSourceResolved && videoPlayer) {
-        console.log('[FullScreenPlayer] Loading video...');
-        videoPlayer.replace(videoSourceResolved as any);
-        videoPlayer.play();
+      if (videoSourceResolved) {
+        console.log('[FullScreenPlayer] Setting video source...');
+        setVideoSource(videoSourceResolved);
+        if (videoPlayer) {
+          videoPlayer.replace(videoSourceResolved as any);
+          videoPlayer.play();
+        }
         console.log('[FullScreenPlayer] Video loaded successfully');
       } else {
-        console.log('[FullScreenPlayer] No video to load or no player');
+        console.log('[FullScreenPlayer] No video to load');
       }
+      
+      setIsLoadingVideo(false);
     } catch (error) {
       console.error('[FullScreenPlayer] Error loading media:', error);
       console.error('[FullScreenPlayer] Error details:', JSON.stringify(error, null, 2));
+      setIsLoadingVideo(false);
     }
   };
 
@@ -254,8 +278,13 @@ export function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
     >
       <StatusBar hidden />
       
-      {Platform.OS === 'web' && videoSource && typeof videoSource === 'object' && 'uri' in videoSource ? (
+      {isLoadingVideo ? (
+        <View style={{ width, height, backgroundColor: '#0b0b0f', alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: '#FFFFFF', fontSize: 16 }}>Chargement...</Text>
+        </View>
+      ) : Platform.OS === 'web' && videoSource && typeof videoSource === 'object' && 'uri' in videoSource ? (
         <video
+          key={currentMedia.id}
           style={{
             width: width,
             height: height,
@@ -266,6 +295,10 @@ export function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
           loop
           muted
           playsInline
+          onError={(e) => {
+            console.error('[FullScreenPlayer] Video error:', e);
+            console.error('[FullScreenPlayer] Video src:', videoSource.uri);
+          }}
         />
       ) : videoSource ? (
         <VideoView
