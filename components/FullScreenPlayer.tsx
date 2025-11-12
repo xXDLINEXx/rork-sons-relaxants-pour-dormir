@@ -74,14 +74,16 @@ export function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
     soundsConfig.find(m => m.id === initialMediaId)
   );
   const [showControls, setShowControls] = useState<boolean>(true);
-  const [videoSource, setVideoSource] = useState<any>(undefined);
+  const [videoSource, setVideoSource] = useState<{ uri: string } | undefined>(undefined);
   const [isLoadingVideo, setIsLoadingVideo] = useState<boolean>(true);
+  const isPlayerActive = useRef<boolean>(false);
   
-  const videoPlayer = useVideoPlayer(videoSource, player => {
-    if (videoSource) {
+  const videoPlayer = useVideoPlayer(videoSource || { uri: '' }, player => {
+    if (videoSource && videoSource.uri) {
       player.loop = true;
       player.muted = true;
       player.play();
+      isPlayerActive.current = true;
     }
   });
   
@@ -95,7 +97,6 @@ export function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
     
     if (Platform.OS === 'android') {
       NavigationBar.setVisibilityAsync('hidden').catch(console.error);
-      NavigationBar.setBehaviorAsync('inset-swipe').catch(console.error);
     }
     
     return () => {
@@ -111,9 +112,10 @@ export function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
       return () => {
         console.log('[FullScreenPlayer] Screen unfocused, cleaning up');
         cleanup();
-        if (videoPlayer) {
+        if (isPlayerActive.current && videoPlayer) {
           try {
             videoPlayer.pause();
+            isPlayerActive.current = false;
           } catch (error) {
             console.error('[FullScreenPlayer] Error pausing video on unfocus:', error);
           }
@@ -252,8 +254,9 @@ export function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
   const handleStop = async () => {
     console.log('[FullScreenPlayer] Stop button pressed');
     try {
-      if (videoPlayer) {
+      if (isPlayerActive.current && videoPlayer) {
         videoPlayer.pause();
+        isPlayerActive.current = false;
       }
     } catch (error) {
       console.error('[FullScreenPlayer] Error pausing video:', error);
