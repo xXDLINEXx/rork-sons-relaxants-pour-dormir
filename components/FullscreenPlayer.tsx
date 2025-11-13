@@ -157,6 +157,16 @@ export function FullScreenPlayer({ initialMediaId }: FullScreenPlayerProps) {
 
   const cleanup = async () => {
     console.log('[FullScreenPlayer] Cleanup called');
+    
+    try {
+      if (videoPlayer) {
+        console.log('[FullScreenPlayer] Pausing and stopping video');
+        videoPlayer.pause();
+      }
+    } catch (error) {
+      console.error('[FullScreenPlayer] Error stopping video:', error);
+    }
+    
     if (soundRef.current) {
       try {
         console.log('[FullScreenPlayer] Stopping and unloading sound');
